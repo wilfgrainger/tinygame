@@ -1,0 +1,4 @@
+GOOGLE_CLIENT_ID="your-google-web-client-id.apps.googleusercontent.com"
+ALLOWED_ORIGIN="http://127.0.0.1:5173"
+SESSION_PEPPER="replace-with-a-long-random-local-value"
+AUTH_RATE_LIMIT_SALT="replace-with-a-different-long-random-local-value"
