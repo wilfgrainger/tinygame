@@ -49,6 +49,10 @@ export class D1Store implements Store {
     await this.db.prepare('DELETE FROM sessions WHERE token_hash=?1').bind(tokenHash).run();
   }
 
+  async deleteUserSessions(userId: string): Promise<void> {
+    await this.db.prepare('DELETE FROM sessions WHERE user_id=?1').bind(userId).run();
+  }
+
   async checkAuthRateLimit(rateKey: string, nowMs: number): Promise<{ allowed: boolean; retryAfter: number }> {
     const row = await this.db.prepare('SELECT window_start,attempts FROM auth_rate_limits WHERE rate_key=?1').bind(rateKey).first<Record<string, unknown>>();
     const windowMs = 60_000;

@@ -42,6 +42,7 @@ export function createRouter(env: Env, deps: RouterDeps = {}) {
         const identity = await googleVerifier.verify(parsed.data.credential, env);
         const current = now().toISOString();
         const user = await store.upsertGoogleUser(identity, current);
+        await store.deleteUserSessions(user.id);
         const session = await createSession(store, user.id, env, now());
         return ok({ userId: user.id }, { headers: { 'Set-Cookie': session.cookie } });
       }

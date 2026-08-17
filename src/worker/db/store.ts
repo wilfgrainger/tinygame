@@ -1,4 +1,4 @@
-import type { DiscoveryId, SpawnId } from '../../shared/ids';
+import type { DiscoveryId } from '../../shared/ids';
 import type { HomeState, ProfilePatch } from '../../shared/schemas';
 import type { PlayerProfile, WorldBootstrap } from '../../shared/api';
 import type { GoogleIdentity } from '../auth/google';
@@ -11,6 +11,7 @@ export interface Store {
   createSession(userId: string, tokenHash: string, createdAt: string, expiresAt: string): Promise<void>;
   getSession(tokenHash: string): Promise<SessionRecord | null>;
   deleteSession(tokenHash: string): Promise<void>;
+  deleteUserSessions(userId: string): Promise<void>;
   checkAuthRateLimit(rateKey: string, nowMs: number): Promise<{ allowed: boolean; retryAfter: number }>;
   getUser(userId: string): Promise<UserRecord | null>;
   getProfile(userId: string): Promise<PlayerProfile>;
