@@ -1,0 +1,32 @@
+{
+  "name": "tinygame",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "prebuild": "node scripts/write-release-metadata.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:worker": "vitest run tests/worker",
+    "test:browser": "playwright test",
+    "verify:source": "node scripts/verify-source-contract.mjs",
+    "verify:dist": "node scripts/verify-dist-budget.mjs",
+    "ci": "npm run typecheck && npm run verify:source && npm test && npm run build && npm run verify:dist"
+  },
+  "dependencies": {
+    "jose": "6.2.7",
+    "playcanvas": "2.21.3",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.0",
+    "vitest": "4.1.10",
+    "wrangler": "4.118.0"
+  }
+}
