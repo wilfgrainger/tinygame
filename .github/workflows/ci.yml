@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify source, tests and build
+        run: npm run ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Browser tests
+        run: npm run test:browser
