@@ -12,8 +12,8 @@ export class PlayerController {
   readonly swimSpeed = 3.6;
   private state: PlayerSnapshot;
 
-  constructor(private readonly collision: CollisionWorld, private readonly water: WaterSystem, spawn: Vec3) {
-    this.state = { position: { ...spawn, y: collision.heightAt(spawn.x, spawn.z) }, yaw: 0, pitch: -18, verticalVelocity: 0, mode: 'grounded' };
+  constructor(private readonly collision: CollisionWorld, private readonly water: WaterSystem, spawn: Vec3, spawnYaw = 0) {
+    this.state = { position: { ...spawn, y: collision.heightAt(spawn.x, spawn.z) }, yaw: spawnYaw, pitch: -18, verticalVelocity: 0, mode: 'grounded' };
   }
 
   get snapshot(): PlayerSnapshot { return { ...this.state, position: { ...this.state.position } }; }
