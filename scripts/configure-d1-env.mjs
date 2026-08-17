@@ -23,7 +23,8 @@ const config = {
     database_id: id,
     migrations_dir: 'migrations'
   }],
-  vars: { TINY_ENV: environment }
+  vars: { TINY_ENV: environment },
+  secrets: base.secrets
 };
 
 const file = `wrangler.${environment}.jsonc`;
