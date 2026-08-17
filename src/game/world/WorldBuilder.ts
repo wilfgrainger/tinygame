@@ -41,14 +41,14 @@ export class WorldBuilder {
     this.buildHarbour();
     const bikeEntity = this.buildBike();
     const raftEntity = this.buildRaft();
-    const colliders = this.colliders(home);
+    const colliders = this.colliders();
     return { colliders, bikeEntity, raftEntity, ...home };
   }
 
   private route(name: string, x: number, z: number, sx: number, sz: number, yaw = 0) {
     const y = heightAt(x, z) + 0.08;
-    const e = primitive(this.app, name, 'box', this.path, new pc.Vec3(x, y, z), new pc.Vec3(sx, 0.14, sz));
-    e.setEulerAngles(0, yaw, 0);
+    const entity = primitive(this.app, name, 'box', this.path, new pc.Vec3(x, y, z), new pc.Vec3(sx, 0.14, sz));
+    entity.setEulerAngles(0, yaw, 0);
   }
 
   private buildRoutes() {
@@ -61,9 +61,13 @@ export class WorldBuilder {
   private house(name: string, x: number, z: number, body: pc.Material, roof: pc.Material, scale = 1) {
     const y = heightAt(x, z);
     primitive(this.app, `${name}Body`, 'box', body, new pc.Vec3(x, y + 2.6 * scale, z), new pc.Vec3(8 * scale, 5.2 * scale, 7 * scale));
-    const roofRoot = new pc.Entity(`${name}Roof`); roofRoot.setPosition(x, y + 5.8 * scale, z); this.app.root.addChild(roofRoot);
-    const left = primitive(this.app, `${name}RoofLeft`, 'box', roof, new pc.Vec3(0, 0, -1.3 * scale), new pc.Vec3(8.8 * scale, 0.5 * scale, 4.5 * scale), roofRoot); left.setLocalEulerAngles(28, 0, 0);
-    const right = primitive(this.app, `${name}RoofRight`, 'box', roof, new pc.Vec3(0, 0, 1.3 * scale), new pc.Vec3(8.8 * scale, 0.5 * scale, 4.5 * scale), roofRoot); right.setLocalEulerAngles(-28, 0, 0);
+    const roofRoot = new pc.Entity(`${name}Roof`);
+    roofRoot.setPosition(x, y + 5.8 * scale, z);
+    this.app.root.addChild(roofRoot);
+    const left = primitive(this.app, `${name}RoofLeft`, 'box', roof, new pc.Vec3(0, 0, -1.3 * scale), new pc.Vec3(8.8 * scale, 0.5 * scale, 4.5 * scale), roofRoot);
+    left.setLocalEulerAngles(28, 0, 0);
+    const right = primitive(this.app, `${name}RoofRight`, 'box', roof, new pc.Vec3(0, 0, 1.3 * scale), new pc.Vec3(8.8 * scale, 0.5 * scale, 4.5 * scale), roofRoot);
+    right.setLocalEulerAngles(-28, 0, 0);
   }
 
   private buildVillage() {
@@ -76,17 +80,24 @@ export class WorldBuilder {
   }
 
   private buildHome() {
-    const x = -39; const z = 31; const y = heightAt(x, z);
-    const wall = this.cream; const roof = this.coral;
+    const x = -39;
+    const z = 31;
+    const y = heightAt(x, z);
+    const wall = this.cream;
+    const roof = this.coral;
     primitive(this.app, 'PlayerHomeFloor', 'box', this.wood, new pc.Vec3(x, y + 0.15, z), new pc.Vec3(10, 0.3, 9));
     primitive(this.app, 'PlayerHomeBack', 'box', wall, new pc.Vec3(x, y + 2.5, z + 4.35), new pc.Vec3(10, 5, 0.35));
     primitive(this.app, 'PlayerHomeLeft', 'box', wall, new pc.Vec3(x - 4.85, y + 2.5, z), new pc.Vec3(0.35, 5, 9));
     primitive(this.app, 'PlayerHomeRight', 'box', wall, new pc.Vec3(x + 4.85, y + 2.5, z), new pc.Vec3(0.35, 5, 9));
     primitive(this.app, 'PlayerHomeFrontLeft', 'box', wall, new pc.Vec3(x - 3.4, y + 2.5, z - 4.35), new pc.Vec3(3, 5, 0.35));
     primitive(this.app, 'PlayerHomeFrontRight', 'box', wall, new pc.Vec3(x + 3.4, y + 2.5, z - 4.35), new pc.Vec3(3, 5, 0.35));
-    const roofRoot = new pc.Entity('PlayerHomeRoof'); roofRoot.setPosition(x, y + 5.7, z); this.app.root.addChild(roofRoot);
-    const r1 = primitive(this.app, 'PlayerHomeRoofA', 'box', roof, new pc.Vec3(0, 0, -1.7), new pc.Vec3(11, 0.5, 5.5), roofRoot); r1.setLocalEulerAngles(26, 0, 0);
-    const r2 = primitive(this.app, 'PlayerHomeRoofB', 'box', roof, new pc.Vec3(0, 0, 1.7), new pc.Vec3(11, 0.5, 5.5), roofRoot); r2.setLocalEulerAngles(-26, 0, 0);
+    const roofRoot = new pc.Entity('PlayerHomeRoof');
+    roofRoot.setPosition(x, y + 5.7, z);
+    this.app.root.addChild(roofRoot);
+    const r1 = primitive(this.app, 'PlayerHomeRoofA', 'box', roof, new pc.Vec3(0, 0, -1.7), new pc.Vec3(11, 0.5, 5.5), roofRoot);
+    r1.setLocalEulerAngles(26, 0, 0);
+    const r2 = primitive(this.app, 'PlayerHomeRoofB', 'box', roof, new pc.Vec3(0, 0, 1.7), new pc.Vec3(11, 0.5, 5.5), roofRoot);
+    r2.setLocalEulerAngles(-26, 0, 0);
     const lampPosition = { x: x - 2.3, y: y + 2.1, z: z + 1.8 };
     const lampEntity = primitive(this.app, 'HomeLamp', 'sphere', this.glow, new pc.Vec3(lampPosition.x, lampPosition.y, lampPosition.z), new pc.Vec3(0.7, 0.7, 0.7));
     const chairPosition = { x: x + 1.8, y, z: z + 1.7 };
@@ -105,17 +116,24 @@ export class WorldBuilder {
   }
 
   private buildWoodland() {
-    const trees = [[-55,-25,1.2],[-48,-30,1.1],[-59,-37,1.3],[-48,-44,1.25],[-38,-39,1.05],[-57,-51,1.1],[-35,-52,1.2],[-65,-45,1.15],[-42,-20,0.9]];
-    for (const [x,z,s] of trees) this.tree(x!, z!, s!);
-    const y = heightAt(-53, -42); const log = primitive(this.app, 'GroveLog', 'cylinder', this.wood, new pc.Vec3(-53, y + 0.6, -42), new pc.Vec3(0.8, 5, 0.8)); log.setEulerAngles(0, 0, 90);
+    const trees: ReadonlyArray<readonly [number, number, number]> = [
+      [-55, -25, 1.2], [-48, -30, 1.1], [-59, -37, 1.3], [-48, -44, 1.25], [-38, -39, 1.05],
+      [-57, -51, 1.1], [-35, -52, 1.2], [-65, -45, 1.15], [-42, -20, 0.9]
+    ];
+    for (const [x, z, scale] of trees) this.tree(x, z, scale);
+    const y = heightAt(-53, -42);
+    const log = primitive(this.app, 'GroveLog', 'cylinder', this.wood, new pc.Vec3(-53, y + 0.6, -42), new pc.Vec3(0.8, 5, 0.8));
+    log.setEulerAngles(0, 0, 90);
     primitive(this.app, 'GroveRock', 'sphere', this.stone, new pc.Vec3(-50, y + 0.8, -45), new pc.Vec3(2.4, 1.5, 2));
   }
 
   private buildMountain() {
     const summitY = heightAt(46, -50);
     primitive(this.app, 'SummitLookout', 'cylinder', this.stone, new pc.Vec3(46, summitY + 0.35, -50), new pc.Vec3(5, 0.7, 5));
-    for (const [x,z] of [[24,-26],[36,-29],[31,-39],[43,-42]]) {
-      const y = heightAt(x, z); primitive(this.app, 'MountainRock', 'sphere', this.stone, new pc.Vec3(x, y + 1.1, z), new pc.Vec3(2.6, 2.1, 2.2));
+    const rocks: ReadonlyArray<readonly [number, number]> = [[24, -26], [36, -29], [31, -39], [43, -42]];
+    for (const [x, z] of rocks) {
+      const y = heightAt(x, z);
+      primitive(this.app, 'MountainRock', 'sphere', this.stone, new pc.Vec3(x, y + 1.1, z), new pc.Vec3(2.6, 2.1, 2.2));
     }
   }
 
@@ -124,31 +142,48 @@ export class WorldBuilder {
     water.render!.castShadows = false;
     const dockY = WATER_SURFACE_Y + 0.7;
     primitive(this.app, 'HarbourDock', 'box', this.wood, new pc.Vec3(42, dockY, 52), new pc.Vec3(6, 0.5, 13));
-    for (const x of [39.5,44.5]) for (const z of [47,57]) primitive(this.app, 'DockPost', 'cylinder', this.darkWood, new pc.Vec3(x, dockY - 0.7, z), new pc.Vec3(0.45, 2.4, 0.45));
+    for (const x of [39.5, 44.5]) for (const z of [47, 57]) {
+      primitive(this.app, 'DockPost', 'cylinder', this.darkWood, new pc.Vec3(x, dockY - 0.7, z), new pc.Vec3(0.45, 2.4, 0.45));
+    }
   }
 
   private buildBike() {
-    const root = new pc.Entity('TinyBike'); root.setPosition(-10, heightAt(-10, 13) + 0.8, 13); this.app.root.addChild(root);
-    for (const z of [-1.25, 1.25]) { const w = primitive(this.app, 'BikeWheel', 'cylinder', this.darkWood, new pc.Vec3(0, 0, z), new pc.Vec3(1.25, 0.18, 1.25), root); w.setLocalEulerAngles(0, 0, 90); }
-    const frame = primitive(this.app, 'BikeFrame', 'box', this.coral, new pc.Vec3(0, 0.2, 0), new pc.Vec3(0.25, 0.25, 2.4), root); frame.setLocalEulerAngles(18, 0, 0);
+    const root = new pc.Entity('TinyBike');
+    root.setPosition(-10, heightAt(-10, 13) + 0.8, 13);
+    this.app.root.addChild(root);
+    for (const z of [-1.25, 1.25]) {
+      const wheel = primitive(this.app, 'BikeWheel', 'cylinder', this.darkWood, new pc.Vec3(0, 0, z), new pc.Vec3(1.25, 0.18, 1.25), root);
+      wheel.setLocalEulerAngles(0, 0, 90);
+    }
+    const frame = primitive(this.app, 'BikeFrame', 'box', this.coral, new pc.Vec3(0, 0.2, 0), new pc.Vec3(0.25, 0.25, 2.4), root);
+    frame.setLocalEulerAngles(18, 0, 0);
     primitive(this.app, 'BikeSeat', 'box', this.darkWood, new pc.Vec3(0, 1, 0.3), new pc.Vec3(0.8, 0.18, 0.55), root);
     primitive(this.app, 'BikeHandlebars', 'box', this.darkWood, new pc.Vec3(0, 1.2, -0.8), new pc.Vec3(1.4, 0.12, 0.12), root);
     return root;
   }
 
   private buildRaft() {
-    const root = new pc.Entity('TinyRaft'); root.setPosition(50, WATER_SURFACE_Y + 0.15, 59); this.app.root.addChild(root);
-    for (let x = -2; x <= 2; x += 1) primitive(this.app, 'RaftLog', 'box', this.wood, new pc.Vec3(x * 0.8, 0, 0), new pc.Vec3(0.65, 0.38, 4.2), root);
+    const root = new pc.Entity('TinyRaft');
+    root.setPosition(50, WATER_SURFACE_Y + 0.15, 59);
+    this.app.root.addChild(root);
+    for (let x = -2; x <= 2; x += 1) {
+      primitive(this.app, 'RaftLog', 'box', this.wood, new pc.Vec3(x * 0.8, 0, 0), new pc.Vec3(0.65, 0.38, 4.2), root);
+    }
     primitive(this.app, 'RaftRopeA', 'box', this.darkWood, new pc.Vec3(0, 0.25, -1.3), new pc.Vec3(4.4, 0.12, 0.16), root);
     primitive(this.app, 'RaftRopeB', 'box', this.darkWood, new pc.Vec3(0, 0.25, 1.3), new pc.Vec3(4.4, 0.12, 0.16), root);
     return root;
   }
 
-  private colliders(home: { lampEntity: pc.Entity }) : Aabb2[] {
+  private colliders(): Aabb2[] {
     return [
-      { minX: 10, maxX: 18, minZ: 5, maxZ: 13 }, { minX: -17, maxX: -9, minZ: 6, maxZ: 14 }, { minX: 10, maxX: 18, minZ: -15, maxZ: -7 },
-      { minX: -44, maxX: -34, minZ: 35.1, maxZ: 35.6 }, { minX: -44, maxX: -43.5, minZ: 26.5, maxZ: 35.5 }, { minX: -34.5, maxX: -34, minZ: 26.5, maxZ: 35.5 },
-      { minX: -44, maxX: -41.9, minZ: 26.4, maxZ: 26.9 }, { minX: -36.1, maxX: -34, minZ: 26.4, maxZ: 26.9 }
+      { minX: 10, maxX: 18, minZ: 5, maxZ: 13 },
+      { minX: -17, maxX: -9, minZ: 6, maxZ: 14 },
+      { minX: 10, maxX: 18, minZ: -15, maxZ: -7 },
+      { minX: -44, maxX: -34, minZ: 35.1, maxZ: 35.6 },
+      { minX: -44, maxX: -43.5, minZ: 26.5, maxZ: 35.5 },
+      { minX: -34.5, maxX: -34, minZ: 26.5, maxZ: 35.5 },
+      { minX: -44, maxX: -41.9, minZ: 26.4, maxZ: 26.9 },
+      { minX: -36.1, maxX: -34, minZ: 26.4, maxZ: 26.9 }
     ];
   }
 }
