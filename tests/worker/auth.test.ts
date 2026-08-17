@@ -15,17 +15,31 @@ class MemoryStore implements Store {
   home: HomeState = { lampOn: false };
   attempts = 0;
 
-  async upsertGoogleUser(identity: GoogleIdentity, now: string) { this.user ??= { id: 'u1', email: identity.email, displayName: identity.name }; this.profile ??= { userId: 'u1', schemaVersion: 1, playerName: identity.name || 'Tiny Explorer', lastSpawnId: 'village-square', createdAt: now, updatedAt: now }; return this.user; }
-  async createSession(userId: string, tokenHash: string, _createdAt: string, expiresAt: string) { this.sessions.set(tokenHash, { userId, expiresAt }); }
-  async getSession(tokenHash: string) { return this.sessions.get(tokenHash) || null; }
-  async deleteSession(tokenHash: string) { this.sessions.delete(tokenHash); }
-  async checkAuthRateLimit() { this.attempts += 1; return this.attempts > 5 ? { allowed: false, retryAfter: 60 } : { allowed: true, retryAfter: 0 }; }
-  async getUser() { return this.user; }
-  async getProfile() { if (!this.profile) throw new Error('missing'); return this.profile; }
-  async patchProfile(_userId: string, patch: ProfilePatch, now: string) { const p = await this.getProfile(); this.profile = { ...p, ...patch, updatedAt: now }; return this.profile; }
+  async upsertGoogleUser(identity: GoogleIdentity, now: string): Promise<UserRecord> {
+    this.user ??= { id: 'u1', email: identity.email, displayName: identity.name };
+    this.profile ??= { userId: 'u1', schemaVersion: 1, playerName: identity.name || 'Tiny Explorer', lastSpawnId: 'village-square', createdAt: now, updatedAt: now };
+    return this.user;
+  }
+  async createSession(userId: string, tokenHash: string, _createdAt: string, expiresAt: string): Promise<void> { this.sessions.set(tokenHash, { userId, expiresAt }); }
+  async getSession(tokenHash: string): Promise<SessionRecord | null> { return this.sessions.get(tokenHash) || null; }
+  async deleteSession(tokenHash: string): Promise<void> { this.sessions.delete(tokenHash); }
+  async checkAuthRateLimit(): Promise<{ allowed: boolean; retryAfter: number }> { this.attempts += 1; return this.attempts > 5 ? { allowed: false, retryAfter: 60 } : { allowed: true, retryAfter: 0 }; }
+  async getUser(): Promise<UserRecord | null> { return this.user; }
+  async getProfile(): Promise<PlayerProfile> { if (!this.profile) throw new Error('missing'); return this.profile; }
+  async patchProfile(_userId: string, patch: ProfilePatch, now: string): Promise<PlayerProfile> {
+    const current = await this.getProfile();
+    const next: PlayerProfile = {
+      ...current,
+      playerName: patch.playerName ?? current.playerName,
+      lastSpawnId: patch.lastSpawnId ?? current.lastSpawnId,
+      updatedAt: now
+    };
+    this.profile = next;
+    return next;
+  }
   async getBootstrap(): Promise<WorldBootstrap> { return { profile: await this.getProfile(), discoveries: [...this.discoveries], home: this.home }; }
-  async addDiscovery(_userId: string, id: DiscoveryId) { const had = this.discoveries.has(id); this.discoveries.add(id); return !had; }
-  async saveHome(_userId: string, home: HomeState) { this.home = home; return home; }
+  async addDiscovery(_userId: string, id: DiscoveryId): Promise<boolean> { const had = this.discoveries.has(id); this.discoveries.add(id); return !had; }
+  async saveHome(_userId: string, home: HomeState): Promise<HomeState> { this.home = home; return home; }
 }
 
 const env: Env = {
