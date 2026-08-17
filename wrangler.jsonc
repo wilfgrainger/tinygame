@@ -19,8 +19,9 @@
     }
   ],
   "vars": {
-    "TINY_ENV": "local",
-    "GOOGLE_CLIENT_ID": "local-not-configured",
-    "ALLOWED_ORIGIN": "http://127.0.0.1:5173"
+    "TINY_ENV": "local"
+  },
+  "secrets": {
+    "required": ["GOOGLE_CLIENT_ID", "ALLOWED_ORIGIN", "SESSION_PEPPER", "AUTH_RATE_LIMIT_SALT"]
   }
 }
