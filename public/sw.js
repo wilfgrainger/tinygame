@@ -14,6 +14,7 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+
   if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/') || url.pathname === '/manifest.webmanifest') {
     event.respondWith((async () => {
       const cache = await caches.open(STATIC_CACHE);
@@ -25,5 +26,17 @@ self.addEventListener('fetch', (event) => {
     })());
     return;
   }
-  if (request.mode === 'navigate') event.respondWith(fetch(request).catch(() => caches.match('/') || Response.error()));
+
+  if (request.mode === 'navigate') {
+    event.respondWith((async () => {
+      try {
+        return await fetch(request);
+      } catch {
+        return new Response('TinyWorld needs an internet connection to open and save your world.', {
+          status: 503,
+          headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' }
+        });
+      }
+    })());
+  }
 });
