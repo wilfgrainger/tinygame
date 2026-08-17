@@ -17,6 +17,11 @@ function profileFromRow(row: Record<string, unknown>): PlayerProfile {
   };
 }
 
+function throwSaveFailure(error: unknown): never {
+  if (error instanceof ApiHttpError) throw error;
+  throw new ApiHttpError(503, 'SAVE_FAILED', 'TinyWorld could not save your progress');
+}
+
 export class D1Store implements Store {
   constructor(private readonly db: D1DatabaseLike) {}
 
@@ -79,11 +84,15 @@ export class D1Store implements Store {
   }
 
   async patchProfile(userId: string, patch: ProfilePatch, now: string): Promise<PlayerProfile> {
-    const current = await this.getProfile(userId);
-    const playerName = patch.playerName ?? current.playerName;
-    const lastSpawnId = patch.lastSpawnId ?? current.lastSpawnId;
-    await this.db.prepare('UPDATE player_profiles SET player_name=?1,last_spawn_id=?2,updated_at=?3 WHERE user_id=?4').bind(playerName, lastSpawnId, now, userId).run();
-    return { ...current, playerName, lastSpawnId, updatedAt: now };
+    try {
+      const current = await this.getProfile(userId);
+      const playerName = patch.playerName ?? current.playerName;
+      const lastSpawnId = patch.lastSpawnId ?? current.lastSpawnId;
+      await this.db.prepare('UPDATE player_profiles SET player_name=?1,last_spawn_id=?2,updated_at=?3 WHERE user_id=?4').bind(playerName, lastSpawnId, now, userId).run();
+      return { ...current, playerName, lastSpawnId, updatedAt: now };
+    } catch (error) {
+      return throwSaveFailure(error);
+    }
   }
 
   async getBootstrap(userId: string): Promise<WorldBootstrap> {
@@ -98,14 +107,22 @@ export class D1Store implements Store {
   }
 
   async addDiscovery(userId: string, id: DiscoveryId, now: string): Promise<boolean> {
-    const before = await this.db.prepare('SELECT discovery_id FROM player_discoveries WHERE user_id=?1 AND discovery_id=?2').bind(userId, id).first();
-    if (before) return false;
-    await this.db.prepare('INSERT INTO player_discoveries (user_id,discovery_id,discovered_at) VALUES (?1,?2,?3) ON CONFLICT(user_id,discovery_id) DO NOTHING').bind(userId, id, now).run();
-    return true;
+    try {
+      const before = await this.db.prepare('SELECT discovery_id FROM player_discoveries WHERE user_id=?1 AND discovery_id=?2').bind(userId, id).first();
+      if (before) return false;
+      await this.db.prepare('INSERT INTO player_discoveries (user_id,discovery_id,discovered_at) VALUES (?1,?2,?3) ON CONFLICT(user_id,discovery_id) DO NOTHING').bind(userId, id, now).run();
+      return true;
+    } catch (error) {
+      return throwSaveFailure(error);
+    }
   }
 
   async saveHome(userId: string, home: HomeState, now: string): Promise<HomeState> {
-    await this.db.prepare('UPDATE player_home_state SET lamp_on=?1,updated_at=?2 WHERE user_id=?3').bind(home.lampOn ? 1 : 0, now, userId).run();
-    return home;
+    try {
+      await this.db.prepare('UPDATE player_home_state SET lamp_on=?1,updated_at=?2 WHERE user_id=?3').bind(home.lampOn ? 1 : 0, now, userId).run();
+      return home;
+    } catch (error) {
+      return throwSaveFailure(error);
+    }
   }
 }
