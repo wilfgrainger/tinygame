@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "policy": "V0.1 uses repository-authored procedural/primitive geometry only. No third-party production game assets are hot-linked.",
+  "assets": []
+}
