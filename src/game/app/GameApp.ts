@@ -42,7 +42,7 @@ export class GameApp {
     const spawn = SPAWN_POINTS.find((point) => point.id === bootstrap.profile.lastSpawnId) ?? SPAWN_POINTS[0]!;
     const collision = new CollisionWorld(heightAt, runtime.colliders, spawn.position);
     const water = new WaterSystem(WATER_BOUNDS, WATER_SURFACE_Y);
-    const player = new PlayerController(collision, water, spawn.position);
+    const player = new PlayerController(collision, water, spawn.position, spawn.yaw);
     const view = new PlayerView(app);
     const input = new InputState();
     this.keyboard = new KeyboardInput(input, this.canvas);
