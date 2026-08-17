@@ -2,11 +2,14 @@ import * as pc from 'playcanvas';
 import type { Aabb2 } from '../player/CollisionWorld';
 import { heightAt, WATER_SURFACE_Y } from './heightfield';
 import { createTerrain, material, primitive } from './meshFactory';
-import { WATER_BOUNDS } from './WorldDefinition';
+import { MOUNTAIN_WAYPOINTS, WATER_BOUNDS } from './WorldDefinition';
+
+type RoutePoint = readonly [number, number];
 
 export type WorldRuntime = {
   colliders: Aabb2[];
   bikeEntity: pc.Entity;
+  bikeWheelPivots: pc.Entity[];
   raftEntity: pc.Entity;
   lampEntity: pc.Entity;
   cupboardDoor: pc.Entity;
@@ -39,23 +42,37 @@ export class WorldBuilder {
     this.buildWoodland();
     this.buildMountain();
     this.buildHarbour();
-    const bikeEntity = this.buildBike();
+    const bike = this.buildBike();
     const raftEntity = this.buildRaft();
-    const colliders = this.colliders();
-    return { colliders, bikeEntity, raftEntity, ...home };
+    return { colliders: this.colliders(), bikeEntity: bike.root, bikeWheelPivots: bike.wheels, raftEntity, ...home };
   }
 
-  private route(name: string, x: number, z: number, sx: number, sz: number, yaw = 0) {
-    const y = heightAt(x, z) + 0.08;
-    const entity = primitive(this.app, name, 'box', this.path, new pc.Vec3(x, y, z), new pc.Vec3(sx, 0.14, sz));
-    entity.setEulerAngles(0, yaw, 0);
+  private pathSegment(name: string, from: RoutePoint, to: RoutePoint, width: number) {
+    const [ax, az] = from;
+    const [bx, bz] = to;
+    const ay = heightAt(ax, az) + 0.1;
+    const by = heightAt(bx, bz) + 0.1;
+    const dx = bx - ax;
+    const dz = bz - az;
+    const horizontal = Math.hypot(dx, dz);
+    const midX = (ax + bx) / 2;
+    const midY = (ay + by) / 2;
+    const midZ = (az + bz) / 2;
+    const yaw = Math.atan2(dx, dz) * 180 / Math.PI;
+    const pitch = -Math.atan2(by - ay, horizontal) * 180 / Math.PI;
+    const entity = primitive(this.app, name, 'box', this.path, new pc.Vec3(midX, midY, midZ), new pc.Vec3(width, 0.16, horizontal + 0.9));
+    entity.setEulerAngles(pitch, yaw, 0);
+  }
+
+  private pathRibbon(name: string, points: readonly RoutePoint[], width: number) {
+    for (let i = 0; i < points.length - 1; i += 1) this.pathSegment(`${name}-${i + 1}`, points[i]!, points[i + 1]!, width);
   }
 
   private buildRoutes() {
-    this.route('HomeLanePath', -20, 16, 9, 39, -51);
-    this.route('WoodlandPath', -24, -18, 8, 48, 53);
-    this.route('MountainPathA', 19, -18, 8, 42, -47);
-    this.route('HarbourPath', 23, 23, 10, 49, 45);
+    this.pathRibbon('HomeLanePath', [[-4, 3], [-10, 8], [-18, 14], [-27, 21], [-35, 27]], 9);
+    this.pathRibbon('WoodlandPath', [[-4, -3], [-13, -10], [-24, -18], [-34, -25], [-43, -32]], 8);
+    this.pathRibbon('MountainPath', [[4, -4], [12, -13], ...MOUNTAIN_WAYPOINTS.map(({ x, z }) => [x, z] as const)], 8);
+    this.pathRibbon('HarbourPath', [[4, 4], [12, 12], [21, 20], [29, 28], [35, 37], [39, 45]], 10);
   }
 
   private house(name: string, x: number, z: number, body: pc.Material, roof: pc.Material, scale = 1) {
@@ -151,15 +168,20 @@ export class WorldBuilder {
     const root = new pc.Entity('TinyBike');
     root.setPosition(-10, heightAt(-10, 13) + 0.8, 13);
     this.app.root.addChild(root);
+    const wheels: pc.Entity[] = [];
     for (const z of [-1.25, 1.25]) {
-      const wheel = primitive(this.app, 'BikeWheel', 'cylinder', this.darkWood, new pc.Vec3(0, 0, z), new pc.Vec3(1.25, 0.18, 1.25), root);
+      const pivot = new pc.Entity(z < 0 ? 'BikeFrontWheelPivot' : 'BikeRearWheelPivot');
+      pivot.setLocalPosition(0, 0, z);
+      root.addChild(pivot);
+      const wheel = primitive(this.app, 'BikeWheel', 'cylinder', this.darkWood, new pc.Vec3(0, 0, 0), new pc.Vec3(1.25, 0.18, 1.25), pivot);
       wheel.setLocalEulerAngles(0, 0, 90);
+      wheels.push(pivot);
     }
     const frame = primitive(this.app, 'BikeFrame', 'box', this.coral, new pc.Vec3(0, 0.2, 0), new pc.Vec3(0.25, 0.25, 2.4), root);
     frame.setLocalEulerAngles(18, 0, 0);
     primitive(this.app, 'BikeSeat', 'box', this.darkWood, new pc.Vec3(0, 1, 0.3), new pc.Vec3(0.8, 0.18, 0.55), root);
     primitive(this.app, 'BikeHandlebars', 'box', this.darkWood, new pc.Vec3(0, 1.2, -0.8), new pc.Vec3(1.4, 0.12, 0.12), root);
-    return root;
+    return { root, wheels };
   }
 
   private buildRaft() {
