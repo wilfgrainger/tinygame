@@ -6,7 +6,9 @@
   "engines": { "node": ">=24 <25" },
   "scripts": {
     "prebuild": "node scripts/write-release-metadata.mjs",
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
+    "dev:client": "vite",
+    "dev:worker": "wrangler dev --local --port 8787",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
