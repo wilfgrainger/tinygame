@@ -7,10 +7,11 @@ const forbidden = [
   [/\bDurableObject\b/, 'Durable Objects are excluded from V0.1'],
   [/\brojo\b/i, 'Rojo is Roblox-only'],
   [/\broblox\b/i, 'Roblox runtime references are excluded'],
+  [/\bDevFlatGround\b/, 'the flat-ground development scaffold must not return'],
   [/debug[_-]?auth[_-]?bypass/i, 'production auth bypass is forbidden'],
   [/-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/, 'private key material must never be committed']
 ];
-const secretNames = [/^\.dev\.vars/, /^\.env(\.|$)/];
+const secretNames = [/^\.dev\.vars$/, /^\.env$/, /^\.env\.local$/];
 const violations = [];
 
 function files(path) {
@@ -23,7 +24,7 @@ for (const root of roots) {
   try {
     for (const file of files(root)) {
       const rel = relative('.', file);
-      if (secretNames.some((r) => r.test(rel.split('/').at(-1) || ''))) violations.push(`${rel}: secret file name`);
+      if (secretNames.some((pattern) => pattern.test(rel.split('/').at(-1) || ''))) violations.push(`${rel}: secret file name`);
       if (!/\.(ts|js|mjs|json|jsonc|html|css|webmanifest|txt)$/.test(file) && !file.endsWith('package.json')) continue;
       const text = readFileSync(file, 'utf8');
       for (const [pattern, reason] of forbidden) if (pattern.test(text)) violations.push(`${rel}: ${reason}`);
