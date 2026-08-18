@@ -392,12 +392,23 @@ export class GameApp {
       runtime.raftEntity.setPosition(raftState.position.x, raftState.position.y + raftBob, raftState.position.z);
       runtime.raftEntity.setEulerAngles(0, (raftState.yaw * 180) / Math.PI, raftRoll);
 
+      const moveMagnitude = Math.hypot(frame.moveX, frame.moveY);
+      const currentSpeed = snap.mode === 'car'
+        ? Math.abs(car.snapshot.speed)
+        : snap.mode === 'bike'
+        ? Math.abs(bike.snapshot.speed)
+        : (moveMagnitude * (snap.mode === 'swimming' ? 3.6 : 6.0));
+
       view.sync(
-        snap,
-        snap.mode === 'bike' ? 0.95 : snap.mode === 'car' ? 0.5 : snap.mode === 'raft' ? 0.65 : 0,
+        snap.position,
+        snap.yaw,
+        currentSpeed,
         dt,
-        simTime
+        snap.mode,
+        car.snapshot.steerAngle / 32
       );
+
+
       updateCamera(snap.position, snap.yaw, snap.pitch, dt, snap.mode === 'car');
 
       // Discovery triggers

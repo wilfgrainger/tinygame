@@ -21,10 +21,11 @@ export const MOUNTAIN_WAYPOINTS = [
 ].map((point) => ({ ...point, y: heightAt(point.x, point.z) }));
 
 export const SPAWN_POINTS: SpawnPoint[] = [
-  { id: 'village-square', position: { x: 0, y: heightAt(0, 8), z: 8 }, yaw: Math.PI },
-  { id: 'home-lane', position: { x: -34, y: heightAt(-34, 27), z: 27 }, yaw: 1.2 },
-  { id: 'harbour', position: { x: 34, y: heightAt(34, 35), z: 35 }, yaw: 2.4 }
+  { id: 'village-square', position: { x: 0, y: heightAt(0, 8), z: 8 }, yaw: 0 },
+  { id: 'home-lane', position: { x: -34, y: heightAt(-34, 27), z: 27 }, yaw: -Math.PI / 2 },
+  { id: 'harbour', position: { x: 34, y: heightAt(34, 35), z: 35 }, yaw: -Math.PI / 2 }
 ];
+
 
 export const DISCOVERIES: DiscoveryPoint[] = [
   { id: 'mountain-summit', position: { x: 46, y: heightAt(46, -50), z: -50 }, radius: 4 },
