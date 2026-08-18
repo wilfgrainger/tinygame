@@ -1,8 +1,9 @@
 import type { Vec3 } from '../../shared/world';
 import type { InputFrame } from '../input/InputState';
 import type { CollisionWorld } from '../player/CollisionWorld';
+import { steerResponse } from './vehicleFeel';
 
-export type BikeSnapshot = { position: Vec3; yaw: number; mounted: boolean; speed: number };
+export type BikeSnapshot = { position: Vec3; yaw: number; mounted: boolean; speed: number; steerInput: number };
 
 export class BikeController {
   readonly maxSpeed = 11;
@@ -11,7 +12,7 @@ export class BikeController {
 
   constructor(spawn: Vec3, private readonly collision: CollisionWorld) {
     this.spawn = { ...spawn };
-    this.state = { position: { ...spawn }, yaw: Math.PI, mounted: false, speed: 0 };
+    this.state = { position: { ...spawn }, yaw: Math.PI, mounted: false, speed: 0, steerInput: 0 };
   }
 
   get snapshot() { return { ...this.state, position: { ...this.state.position } }; }
@@ -22,7 +23,9 @@ export class BikeController {
     if (!this.state.mounted) return this.snapshot;
     const throttle = Math.max(-0.35, Math.min(1, input.moveY));
     this.state.speed += (throttle * this.maxSpeed - this.state.speed) * Math.min(1, dt * 4);
-    const steer = input.moveX * (0.7 + Math.min(1, Math.abs(this.state.speed) / 5)) * 1.8;
+    this.state.steerInput = Math.max(-1, Math.min(1, input.moveX));
+    const speedRatio = Math.min(1, Math.abs(this.state.speed) / this.maxSpeed);
+    const steer = steerResponse(this.state.steerInput, speedRatio, 0.55, 1.7);
     this.state.yaw -= steer * dt;
     const delta = {
       x: Math.sin(this.state.yaw) * this.state.speed * dt,
@@ -47,14 +50,15 @@ export class BikeController {
     if (!chosen) return null;
     this.state.mounted = false;
     this.state.speed = 0;
+    this.state.steerInput = 0;
     return { x: chosen.x, y: this.collision.heightAt(chosen.x, chosen.z), z: chosen.z };
   }
 
   teleport(position: Vec3, yaw = Math.PI) {
-    this.state = { position: { ...position }, yaw, mounted: false, speed: 0 };
+    this.state = { position: { ...position }, yaw, mounted: false, speed: 0, steerInput: 0 };
   }
 
   reset() {
-    this.state = { position: { ...this.spawn }, yaw: Math.PI, mounted: false, speed: 0 };
+    this.state = { position: { ...this.spawn }, yaw: Math.PI, mounted: false, speed: 0, steerInput: 0 };
   }
 }
