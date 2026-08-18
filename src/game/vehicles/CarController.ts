@@ -44,13 +44,12 @@ export class CarController {
   update(dt: number, input: InputFrame): CarSnapshot {
     if (!this.state.mounted) return this.snapshot;
 
-    const throttle = Math.max(-0.45, Math.min(1, input.moveY));
+    const throttle = Math.max(-1, Math.min(1, input.moveY));
     const targetSpeed = throttle >= 0 ? throttle * this.maxSpeed : throttle * this.maxReverseSpeed;
     const accel = throttle >= 0 ? 5.5 : 4.0;
     this.state.speed += (targetSpeed - this.state.speed) * Math.min(1, dt * accel);
 
-    // Natural steering with speed sensitivity
-    const targetSteer = -input.moveX * 32; // degrees
+    const targetSteer = -input.moveX * 32;
     this.state.steerAngle += (targetSteer - this.state.steerAngle) * Math.min(1, dt * 10);
 
     if (Math.abs(this.state.speed) > 0.2) {
@@ -65,7 +64,10 @@ export class CarController {
       z: -Math.cos(this.state.yaw) * this.state.speed * dt
     };
 
-    this.state.position = this.collision.resolveMove(this.state.position, delta, 1.4);
+    this.state.position = this.collision.resolveMove(this.state.position, delta, 1.4, {
+      maxStepHeight: 0.4,
+      maxSlopeDegrees: 28
+    });
     return this.snapshot;
   }
 
@@ -91,4 +93,3 @@ export class CarController {
     this.state = { position: { ...this.spawn }, yaw: 0, mounted: false, speed: 0, steerAngle: 0 };
   }
 }
-
