@@ -4,17 +4,18 @@
 **Implementation PR:** #2  
 **Implementation branch:** `feat/v0.1-mobile-pwa`  
 **Plan:** `docs/superpowers/plans/2026-08-17-tinyworld-web-v0.1.md`  
-**Last updated:** 2026-08-18 11:31 Europe/London
+**Last updated:** 2026-08-18 11:38 Europe/London
 
 ## Session handoff
 
 TinyWorld is being rebuilt as a mobile-first browser/PWA game in `wilfgrainger/tinygame`. The Roblox repository is historical only. This file is the durable cross-session handoff: every implementation session must read it first and update it before finishing.
 
-The code-owned V0.1 vertical slice with the Brookhaven open-town roleplay overhaul is on PR #2 (`8581173`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured. 
+The code-owned V0.1 vertical slice with the mobile-first Brookhaven open-town roleplay overhaul is on PR #2 (`ab003bc`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured. 
 
-- **Current Candidate SHA**: `3bf21fb5d91f1da347b5cc5882bd0d7f36846d4b`
+- **Current Candidate SHA**: `ab003bc6b90e0965f9a3596dc232c0a28881c7e5`
 - **PR**: PR #2 (`feat/v0.1-mobile-pwa` -> `main`)
 - **Live DEV Endpoint**: `https://tinygame-dev.zerobytemode.workers.dev`
+
 
 ## Work Completed
 1. **Zero-Byte Procedural Web Audio Engine**: Synthesizes footsteps across grass/asphalt/wood/stone, bicycle bells, water swimming/splash, jumps, landing impacts, discovery fanfares, espresso steam, cash register barcode scanner, car horns, doorbells, and light switches.
