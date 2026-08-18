@@ -44,7 +44,7 @@ export class CarController {
   update(dt: number, input: InputFrame): CarSnapshot {
     if (!this.state.mounted) return this.snapshot;
 
-    const throttle = Math.max(-1, Math.min(1, input.moveY));
+    const throttle = Math.max(-0.45, Math.min(1, input.moveY));
     const targetSpeed = throttle >= 0 ? throttle * this.maxSpeed : throttle * this.maxReverseSpeed;
     const accel = throttle >= 0 ? 5.5 : 4.0;
     this.state.speed += (targetSpeed - this.state.speed) * Math.min(1, dt * accel);
