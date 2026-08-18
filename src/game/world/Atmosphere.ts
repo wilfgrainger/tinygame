@@ -1,5 +1,6 @@
 import * as pc from 'playcanvas';
 import { material, primitive } from './meshFactory';
+import { QualityScenery } from './QualityScenery';
 
 export type Particle = {
   entity: pc.Entity;
@@ -21,12 +22,12 @@ export class Atmosphere {
   private markerMat = material(new pc.Color(1.0, 0.84, 0.28), 0.5, 0, 0.95, new pc.Color(0.6, 0.45, 0.1));
 
   constructor(private readonly app: pc.Application) {
-    // Atmospheric fog setup
     app.scene.fog.type = pc.FOG_LINEAR;
     app.scene.fog.color = new pc.Color(0.76, 0.88, 0.98);
     app.scene.fog.start = 45;
     app.scene.fog.end = 240;
 
+    new QualityScenery(app).build();
     this.spawnClouds();
     this.interactionMarker = this.createInteractionMarker();
   }
@@ -50,7 +51,6 @@ export class Atmosphere {
       cloud.setPosition(def.x, def.y, def.z);
       cloudRoot.addChild(cloud);
 
-      // Low-poly cloud cluster
       const puffs = [
         { ox: 0, oy: 0, oz: 0, sx: 7, sy: 3.5, sz: 5 },
         { ox: -3.2, oy: -0.6, oz: 0.5, sx: 5, sy: 3.0, sz: 4 },
@@ -130,7 +130,6 @@ export class Atmosphere {
   }
 
   update(dt: number, time: number, chimneyEmitters: pc.Vec3[], fountainEmitter?: pc.Vec3) {
-    // Drift clouds
     const windSpeed = 1.2;
     for (const cloud of this.clouds) {
       const pos = cloud.getPosition();
@@ -139,19 +138,12 @@ export class Atmosphere {
       cloud.setPosition(nx, pos.y + Math.sin(time * 0.4 + pos.z) * 0.02, pos.z);
     }
 
-    // Spawn chimney smoke periodically
     if (Math.random() < 0.25) {
-      for (const emitter of chimneyEmitters) {
-        this.addChimneySmoke(emitter);
-      }
+      for (const emitter of chimneyEmitters) this.addChimneySmoke(emitter);
     }
 
-    // Spawn fountain droplets
-    if (fountainEmitter && Math.random() < 0.6) {
-      this.addFountainSpray(fountainEmitter);
-    }
+    if (fountainEmitter && Math.random() < 0.6) this.addFountainSpray(fountainEmitter);
 
-    // Update smoke particles
     for (let i = this.smokeParticles.length - 1; i >= 0; i -= 1) {
       const p = this.smokeParticles[i]!;
       p.life += dt;
@@ -168,7 +160,6 @@ export class Atmosphere {
       p.entity.setLocalScale(scale, scale, scale);
     }
 
-    // Update fountain particles
     for (let i = this.fountainParticles.length - 1; i >= 0; i -= 1) {
       const p = this.fountainParticles[i]!;
       p.life += dt;
@@ -177,7 +168,7 @@ export class Atmosphere {
         this.fountainParticles.splice(i, 1);
         continue;
       }
-      p.velocity.y -= 5.5 * dt; // gravity
+      p.velocity.y -= 5.5 * dt;
       const curPos = p.entity.getPosition();
       curPos.add(new pc.Vec3(p.velocity.x * dt, p.velocity.y * dt, p.velocity.z * dt));
       p.entity.setPosition(curPos);
