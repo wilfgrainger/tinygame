@@ -1,38 +1,26 @@
 export class HouseManager {
-  private claimed = false;
-  private ownerName: string | null = null;
-  private locked = false;
   private theme: 'white' | 'brick' | 'pastel' = 'white';
 
+  // Legacy method name retained so the current composition root does not need a
+  // large mechanical rewrite. V0.1 has a player home, not a persistent claim/
+  // lock system, so this action is deliberately welcoming and stateless.
   claim(playerName: string): { success: boolean; message: string } {
-    if (this.claimed && this.ownerName === playerName) {
-      // Toggle door lock
-      this.locked = !this.locked;
-      return {
-        success: true,
-        message: this.locked ? '🔒 Front Door Locked' : '🔓 Front Door Unlocked'
-      };
-    }
-
-    this.claimed = true;
-    this.ownerName = playerName;
-    this.locked = false;
     return {
       success: true,
-      message: `🏠 House Claimed by ${playerName}!`
+      message: `🏠 Welcome home, ${playerName}!`
     };
   }
 
   get isClaimed(): boolean {
-    return this.claimed;
+    return false;
   }
 
   get owner(): string | null {
-    return this.ownerName;
+    return null;
   }
 
   get isLocked(): boolean {
-    return this.locked;
+    return false;
   }
 
   get currentTheme(): 'white' | 'brick' | 'pastel' {
