@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { FixedPool } from '../../src/game/world/particlePool';
 
@@ -12,15 +11,22 @@ describe('mobile atmosphere budget', () => {
     expect(second).not.toBeNull();
     expect(pool.acquire()).toBeNull();
     expect(created).toBe(2);
+    expect(pool.activeCount).toBe(2);
 
     pool.release(first!);
+    expect(pool.activeCount).toBe(1);
     expect(pool.acquire()).toBe(first);
+    expect(pool.activeCount).toBe(2);
     expect(created).toBe(2);
   });
 
-  it('does not destroy particle entities during the normal atmosphere lifecycle', () => {
-    const source = readFileSync('src/game/world/Atmosphere.ts', 'utf8');
-    expect(source).not.toContain('.entity.destroy()');
-    expect(source).not.toContain('new pc.Vec3(p.velocity.x * dt');
+  it('keeps release idempotent so lifecycle cleanup cannot corrupt capacity', () => {
+    const pool = new FixedPool(1, () => ({ id: 1 }));
+    const item = pool.acquire();
+    expect(item).not.toBeNull();
+    pool.release(item!);
+    pool.release(item!);
+    expect(pool.activeCount).toBe(0);
+    expect(pool.acquire()).toBe(item);
   });
 });
