@@ -18,6 +18,7 @@ import { InteractionSystem } from '../world/InteractionSystem';
 import { WaterSystem } from '../water/WaterSystem';
 import { HomeSystem } from '../home/HomeSystem';
 import { BikeController } from '../vehicles/BikeController';
+import { CarController } from '../vehicles/CarController';
 import { RaftController } from '../vehicles/RaftController';
 import type { Hud } from '../ui/Hud';
 
@@ -25,6 +26,7 @@ export class GameApp {
   private app: pc.Application | null = null;
   private keyboard: KeyboardInput | null = null;
   private resizeHandler: (() => void) | null = null;
+  private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -95,6 +97,41 @@ export class GameApp {
     this.keyboard = new KeyboardInput(input, this.canvas);
     new TouchInput(input, this.hud.movePad, this.hud.lookPad, this.hud.jumpButton, this.hud.actionButton);
 
+    // Hand Props integration
+    this.hud.onSelectProp((prop) => {
+      view.setProp(prop);
+      if (prop === 'coffee') {
+        sound.slurp();
+        this.hud.showToast('Holding Hot Coffee ☕');
+      } else if (prop === 'icecream') {
+        sound.slurp();
+        this.hud.showToast('Holding Strawberry Ice Cream 🍦');
+      } else if (prop === 'flashlight') {
+        sound.lamp(true);
+        this.hud.showToast('Flashlight On 🔦');
+      } else if (prop === 'balloon') {
+        sound.click();
+        this.hud.showToast('Holding Red Balloon 🎈');
+      }
+    });
+
+    // Keyboard prop shortcuts
+    this.keydownHandler = (e: KeyboardEvent) => {
+      if (e.key === '1') this.hud.selectProp('coffee');
+      else if (e.key === '2') this.hud.selectProp('icecream');
+      else if (e.key === '3') this.hud.selectProp('flashlight');
+      else if (e.key === '4') this.hud.selectProp('balloon');
+      else if (e.key === '0') this.hud.selectProp('none');
+      else if (e.key === 'h' || e.key === 'H') sound.carHorn();
+    };
+
+    window.addEventListener('keydown', this.keydownHandler);
+
+    this.hud.hornButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.carHorn();
+    });
+
     const interactions = new InteractionSystem();
     const home = new HomeSystem(
       bootstrap.home,
@@ -103,12 +140,16 @@ export class GameApp {
     );
     const discovered = new Set<DiscoveryId>(bootstrap.discoveries);
 
-    const bike = new BikeController({ x: -10, y: heightAt(-10, 13), z: 13 }, collision);
+    // Vehicles
+    const bike = new BikeController({ x: 15, y: heightAt(15, 7), z: 7 }, collision);
+    const car = new CarController({ x: 5, y: heightAt(5, 8), z: 8 }, collision);
     const raft = new RaftController({ x: 50, y: WATER_SURFACE_Y + 0.15, z: 59 }, water);
 
     let cupboardOpen = false;
-    let wheelAngle = 0;
+    let bikeWheelAngle = 0;
+    let carWheelAngle = 0;
     let previousBikePosition = { ...bike.snapshot.position };
+    let previousCarPosition = { ...car.snapshot.position };
     let prevMode: PlayerMode = 'grounded';
     let simTime = 0;
 
@@ -125,6 +166,64 @@ export class GameApp {
     };
     syncLamp();
 
+    // Brookhaven Town Roleplay Interactions
+    interactions.register({
+      id: 'cafe',
+      label: 'Brew Coffee ☕',
+      position: runtime.cafeCounterPosition,
+      radius: 2.6,
+      run: () => {
+        sound.coffeeBrew();
+        view.setProp('coffee');
+        this.hud.showToast('Brewed a fresh hot latte! ☕');
+      }
+    });
+
+    interactions.register({
+      id: 'grocery',
+      label: 'Checkout 🛒',
+      position: runtime.groceryRegisterPosition,
+      radius: 2.6,
+      run: () => {
+        sound.cashRegister();
+        this.hud.showToast('Scanned fresh groceries! 🛒');
+      }
+    });
+
+    interactions.register({
+      id: 'townhall',
+      label: 'Give Speech 🎙️',
+      position: runtime.townHallPodiumPosition,
+      radius: 2.6,
+      run: () => {
+        sound.click();
+        this.hud.showToast('Mayor: Welcome everyone to TinyTown!');
+      }
+    });
+
+    interactions.register({
+      id: 'doorbell',
+      label: 'Ring Bell 🔔',
+      position: runtime.doorbellPosition,
+      radius: 2.4,
+      run: () => {
+        sound.doorbell();
+        this.hud.showToast('*Ding-Dong!* 🔔');
+      }
+    });
+
+    interactions.register({
+      id: 'fridge',
+      label: 'Grab Treat 🍦',
+      position: runtime.fridgePosition,
+      radius: 2.4,
+      run: () => {
+        sound.slurp();
+        view.setProp('icecream');
+        this.hud.showToast('Grabbed delicious ice cream! 🍦');
+      }
+    });
+
     interactions.register({
       id: 'lamp',
       label: 'Toggle Lamp',
@@ -134,24 +233,24 @@ export class GameApp {
         sound.lamp(!home.current.lampOn);
         const result = await home.setLamp(!home.current.lampOn);
         syncLamp();
-        this.hud.showToast(result === 'saved' ? 'Lamp saved to cloud' : 'Lamp updated');
+        this.hud.showToast(result === 'saved' ? 'Bedside lamp saved' : 'Lamp updated');
       }
     });
 
     interactions.register({
       id: 'chair',
-      label: 'Sit down',
+      label: 'Sit on Sofa',
       position: runtime.chairPosition,
-      radius: 2.2,
+      radius: 2.4,
       run: () => {
         sound.click();
-        this.hud.showToast('A tiny sit. Surprisingly restorative.');
+        this.hud.showToast('Relaxing comfortably on the living room sofa.');
       }
     });
 
     interactions.register({
       id: 'cupboard',
-      label: 'Open Cupboard',
+      label: 'Open Wardrobe',
       position: runtime.cupboardPosition,
       radius: 2.4,
       run: () => {
@@ -161,18 +260,18 @@ export class GameApp {
       }
     });
 
-    const updateCamera = (position: Vec3, yaw: number, pitch: number, dt: number) => {
-      const distance = 8.5;
+    const updateCamera = (position: Vec3, yaw: number, pitch: number, dt: number, inVehicle = false) => {
+      const distance = inVehicle ? 11.5 : 8.5;
+      const heightOffset = inVehicle ? 4.8 : 3.8;
       const pitchRad = (pitch * Math.PI) / 180;
       const targetCamX = position.x - Math.sin(yaw) * Math.cos(pitchRad) * distance;
-      const targetCamY = position.y + 3.8 - Math.sin(pitchRad) * distance * 0.45;
+      const targetCamY = position.y + heightOffset - Math.sin(pitchRad) * distance * 0.45;
       const targetCamZ = position.z + Math.cos(yaw) * Math.cos(pitchRad) * distance;
 
       const targetLookX = position.x;
       const targetLookY = position.y + 1.4;
       const targetLookZ = position.z;
 
-      // Smooth camera dampening
       const lerpFactor = Math.min(1, dt * 12);
       camPos.lerp(camPos, new pc.Vec3(targetCamX, targetCamY, targetCamZ), lerpFactor);
       camLook.lerp(camLook, new pc.Vec3(targetLookX, targetLookY, targetLookZ), lerpFactor);
@@ -184,11 +283,31 @@ export class GameApp {
     const syncBikeVisual = () => {
       const state = bike.snapshot;
       const travelled = Math.hypot(state.position.x - previousBikePosition.x, state.position.z - previousBikePosition.z);
-      wheelAngle = (wheelAngle + (travelled / 1.25) * 180 / Math.PI) % 360;
+      bikeWheelAngle = (bikeWheelAngle + (travelled / 1.25) * 180 / Math.PI) % 360;
       previousBikePosition = { ...state.position };
       runtime.bikeEntity.setPosition(state.position.x, state.position.y + 0.75, state.position.z);
       runtime.bikeEntity.setEulerAngles(0, (state.yaw * 180) / Math.PI, 0);
-      for (const pivot of runtime.bikeWheelPivots) pivot.setLocalEulerAngles(wheelAngle, 0, 0);
+      for (const pivot of runtime.bikeWheelPivots) pivot.setLocalEulerAngles(bikeWheelAngle, 0, 0);
+    };
+
+    const syncCarVisual = () => {
+      const state = car.snapshot;
+      const travelled = Math.hypot(state.position.x - previousCarPosition.x, state.position.z - previousCarPosition.z);
+      const direction = state.speed >= 0 ? 1 : -1;
+      carWheelAngle = (carWheelAngle + (travelled / 0.85) * direction * 180 / Math.PI) % 360;
+      previousCarPosition = { ...state.position };
+
+      runtime.carEntity.setPosition(state.position.x, state.position.y + 0.55, state.position.z);
+      runtime.carEntity.setEulerAngles(0, (state.yaw * 180) / Math.PI, 0);
+
+      // Front wheel steering angle
+      for (const mount of runtime.carFrontWheelMounts) {
+        mount.setLocalEulerAngles(0, state.steerAngle, 0);
+      }
+      // All 4 wheels spinning
+      for (const pivot of runtime.carWheelPivots) {
+        pivot.setLocalEulerAngles(carWheelAngle, 0, 0);
+      }
     };
 
     app.on('update', (dt: number) => {
@@ -197,12 +316,22 @@ export class GameApp {
       const frame = input.snapshot();
       let snap = player.snapshot;
 
-      // Sound triggers for jump
       if (frame.jumpPressed && snap.mode === 'grounded') {
         sound.jump();
       }
 
-      if (bike.snapshot.mounted) {
+      if (car.snapshot.mounted) {
+        this.hud.setCarMode(true);
+        if (frame.interactPressed) {
+          sound.click();
+          const dismount = car.dismount();
+          if (dismount) player.resumeGrounded(dismount);
+        } else {
+          const state = car.update(dt, frame);
+          player.setExternal(state.position, state.yaw, 'car');
+        }
+      } else if (bike.snapshot.mounted) {
+        this.hud.setCarMode(false);
         if (frame.interactPressed) {
           sound.click();
           const dismount = bike.dismount();
@@ -212,6 +341,7 @@ export class GameApp {
           player.setExternal(state.position, state.yaw, 'bike');
         }
       } else if (raft.snapshot.mounted) {
+        this.hud.setCarMode(false);
         if (frame.interactPressed) {
           sound.click();
           const dismount = raft.dismount();
@@ -221,20 +351,22 @@ export class GameApp {
           player.setExternal(state.position, state.yaw, 'raft');
         }
       } else {
+        this.hud.setCarMode(false);
         snap = player.update(dt, frame);
 
-        // Landing sound
         if (prevMode === 'airborne' && snap.mode === 'grounded') {
           sound.land();
         }
 
-        // Entering water splash
         if (prevMode !== 'swimming' && snap.mode === 'swimming') {
           sound.splash();
         }
 
         if (frame.interactPressed) {
-          if (bike.canMount(snap.position) && bike.mount(snap.position)) {
+          if (car.canMount(snap.position) && car.mount(snap.position)) {
+            sound.carHorn();
+            player.setExternal(car.snapshot.position, car.snapshot.yaw, 'car');
+          } else if (bike.canMount(snap.position) && bike.mount(snap.position)) {
             sound.bikeBell();
             player.setExternal(bike.snapshot.position, bike.snapshot.yaw, 'bike');
           } else if (raft.canMount(snap.position) && raft.mount(snap.position)) {
@@ -250,16 +382,21 @@ export class GameApp {
       snap = player.snapshot;
 
       syncBikeVisual();
+      syncCarVisual();
 
       const raftState = raft.snapshot;
-      // Gentle water bobbing on raft
       const raftBob = Math.sin(simTime * 2.2) * 0.04;
       const raftRoll = Math.sin(simTime * 1.8) * 1.5;
       runtime.raftEntity.setPosition(raftState.position.x, raftState.position.y + raftBob, raftState.position.z);
       runtime.raftEntity.setEulerAngles(0, (raftState.yaw * 180) / Math.PI, raftRoll);
 
-      view.sync(snap, snap.mode === 'bike' ? 0.95 : snap.mode === 'raft' ? 0.65 : 0, dt);
-      updateCamera(snap.position, snap.yaw, snap.pitch, dt);
+      view.sync(
+        snap,
+        snap.mode === 'bike' ? 0.95 : snap.mode === 'car' ? 0.5 : snap.mode === 'raft' ? 0.65 : 0,
+        dt,
+        simTime
+      );
+      updateCamera(snap.position, snap.yaw, snap.pitch, dt, snap.mode === 'car');
 
       // Discovery triggers
       for (const discovery of DISCOVERIES) {
@@ -280,13 +417,16 @@ export class GameApp {
       let action: string | null = null;
       let targetMarkerPos: { x: number; y: number; z: number } | null = null;
 
-      if (bike.snapshot.mounted || raft.snapshot.mounted) {
+      if (car.snapshot.mounted || bike.snapshot.mounted || raft.snapshot.mounted) {
         action = 'Dismount';
+      } else if (car.canMount(snap.position)) {
+        action = 'Drive Mini-Car 🚗';
+        targetMarkerPos = car.snapshot.position;
       } else if (bike.canMount(snap.position)) {
-        action = 'Ride Tiny Bike';
+        action = 'Ride Cruiser 🚲';
         targetMarkerPos = bike.snapshot.position;
       } else if (raft.canMount(snap.position)) {
-        action = 'Board Tiny Raft';
+        action = 'Board Raft ⛵';
         targetMarkerPos = raft.snapshot.position;
       } else {
         const near = interactions.nearest(snap.position);
@@ -314,6 +454,7 @@ export class GameApp {
   destroy() {
     this.keyboard?.destroy();
     if (this.resizeHandler) window.removeEventListener('resize', this.resizeHandler);
+    if (this.keydownHandler) window.removeEventListener('keydown', this.keydownHandler);
     this.app?.destroy();
     this.app = null;
   }

@@ -1,4 +1,5 @@
 import type { ReleaseMetadata } from '../../generated/release';
+import type { PropType } from '../player/HandProps';
 
 export class Hud {
   readonly element = document.createElement('div');
@@ -6,11 +7,15 @@ export class Hud {
   readonly lookPad = document.createElement('div');
   readonly jumpButton = document.createElement('button');
   readonly actionButton = document.createElement('button');
+  readonly hornButton = document.createElement('button');
+  readonly propsButton = document.createElement('button');
+  readonly propsDrawer = document.createElement('div');
   private readonly toast = document.createElement('div');
   private readonly discoveryBanner = document.createElement('div');
   private readonly saveState = document.createElement('div');
   private toastTimer = 0;
   private bannerTimer = 0;
+  private onSelectPropCallback?: (prop: PropType) => void;
 
   constructor(release: ReleaseMetadata) {
     this.element.className = 'hud';
@@ -27,6 +32,47 @@ export class Hud {
     this.actionButton.textContent = 'Action';
     this.actionButton.hidden = true;
 
+    this.hornButton.className = 'action-button horn';
+    this.hornButton.innerHTML = '📢 <span class="btn-text">Horn</span>';
+    this.hornButton.hidden = true;
+
+    // Brookhaven-style Top Props Bar
+    const topBar = document.createElement('div');
+    topBar.className = 'top-bar';
+
+    this.propsButton.className = 'top-pill-btn';
+    this.propsButton.innerHTML = '🎒 <span class="pill-text">Props</span>';
+    this.propsButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.propsDrawer.hidden = !this.propsDrawer.hidden;
+    });
+
+    topBar.append(this.propsButton);
+
+    // Props Slide-Out Drawer
+    this.propsDrawer.className = 'props-drawer';
+    this.propsDrawer.hidden = true;
+
+    const propOptions: { type: PropType; label: string; icon: string }[] = [
+      { type: 'coffee', label: 'Coffee', icon: '☕' },
+      { type: 'icecream', label: 'Ice Cream', icon: '🍦' },
+      { type: 'flashlight', label: 'Flashlight', icon: '🔦' },
+      { type: 'balloon', label: 'Balloon', icon: '🎈' },
+      { type: 'none', label: 'Put Away', icon: '❌' }
+    ];
+
+    for (const opt of propOptions) {
+      const btn = document.createElement('button');
+      btn.className = 'prop-btn';
+      btn.innerHTML = `<span class="prop-icon">${opt.icon}</span><span class="prop-label">${opt.label}</span>`;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.onSelectPropCallback?.(opt.type);
+        this.propsDrawer.hidden = true;
+      });
+      this.propsDrawer.append(btn);
+    }
+
     this.toast.className = 'toast';
     this.toast.hidden = true;
 
@@ -39,8 +85,29 @@ export class Hud {
     stamp.className = 'build-stamp';
     stamp.textContent = `v${release.version} • ${release.commitSha.slice(0, 8)} • ${release.environment}`;
 
-    this.element.append(stamp, this.lookPad, this.movePad, this.jumpButton, this.actionButton, this.toast, this.discoveryBanner, this.saveState);
+    this.element.append(
+      stamp,
+      topBar,
+      this.propsDrawer,
+      this.lookPad,
+      this.movePad,
+      this.jumpButton,
+      this.actionButton,
+      this.hornButton,
+      this.toast,
+      this.discoveryBanner,
+      this.saveState
+    );
   }
+
+  onSelectProp(callback: (prop: PropType) => void) {
+    this.onSelectPropCallback = callback;
+  }
+
+  selectProp(prop: PropType) {
+    this.onSelectPropCallback?.(prop);
+  }
+
 
   setAction(label: string | null) {
     this.actionButton.hidden = !label;
@@ -49,6 +116,11 @@ export class Hud {
       this.actionButton.classList.add('pop');
       window.setTimeout(() => this.actionButton.classList.remove('pop'), 150);
     }
+  }
+
+  setCarMode(inCar: boolean) {
+    this.hornButton.hidden = !inCar;
+    this.jumpButton.hidden = inCar;
   }
 
   showToast(message: string, ms = 2200) {

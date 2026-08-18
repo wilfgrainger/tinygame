@@ -1,6 +1,7 @@
 import * as pc from 'playcanvas';
 import type { PlayerMode, PlayerSnapshot } from './PlayerController';
 import { material, primitive } from '../world/meshFactory';
+import { HandProps, type PropType } from './HandProps';
 
 export class PlayerView {
   readonly root = new pc.Entity('TinyExplorer');
@@ -11,17 +12,17 @@ export class PlayerView {
   private readonly armL = new pc.Entity('ExplorerShoulderL');
   private readonly armR = new pc.Entity('ExplorerShoulderR');
   private readonly backpack = new pc.Entity('ExplorerBackpack');
+  readonly handProps: HandProps;
 
   private walkPhase = 0;
   private prevPos = { x: 0, y: 0, z: 0 };
   private prevYaw = 0;
   private currentBank = 0;
   private landSquash = 0;
-  private prevGrounded = true;
   private prevMode: PlayerMode = 'grounded';
 
   // Step trigger callback for footstep audio
-  onStep?: (surface: 'grass' | 'wood' | 'stone' | 'sand') => void;
+  onStep?: (surface: 'grass' | 'wood' | 'stone' | 'sand' | 'asphalt') => void;
 
   constructor(app: pc.Application) {
     app.root.addChild(this.root);
@@ -102,9 +103,16 @@ export class PlayerView {
     // Right arm & hand
     primitive(app, 'ArmR_Sleeve', 'capsule', shirtMat, new pc.Vec3(0, -0.32, 0), new pc.Vec3(0.22, 0.62, 0.22), this.armR);
     primitive(app, 'ArmR_Hand', 'sphere', skinMat, new pc.Vec3(0, -0.64, 0), new pc.Vec3(0.19, 0.19, 0.19), this.armR);
+
+    // Handheld Props manager attached to right hand
+    this.handProps = new HandProps(app, this.armR);
   }
 
-  sync(snapshot: PlayerSnapshot, rideOffset = 0, dt = 0.016) {
+  setProp(prop: PropType) {
+    this.handProps.setProp(prop);
+  }
+
+  sync(snapshot: PlayerSnapshot, rideOffset = 0, dt = 0.016, simTime = 0) {
     const mode = snapshot.mode;
     const isGrounded = mode === 'grounded';
 
@@ -112,7 +120,6 @@ export class PlayerView {
     if (this.prevMode === 'airborne' && isGrounded) {
       this.landSquash = 0.35;
     }
-    this.prevGrounded = isGrounded;
     this.landSquash = Math.max(0, this.landSquash - dt * 2.8);
 
     // Position & Yaw
@@ -134,6 +141,7 @@ export class PlayerView {
     this.currentBank += (targetBank - this.currentBank) * Math.min(1, dt * 10);
 
     const degYaw = (snapshot.yaw * 180) / Math.PI;
+    const isHoldingItem = this.handProps.current !== 'none';
 
     if (mode === 'bike') {
       // Bike riding pose
@@ -154,6 +162,23 @@ export class PlayerView {
       // Hands gripping handlebars
       this.armL.setLocalEulerAngles(55, 15, -10);
       this.armR.setLocalEulerAngles(55, -15, 10);
+
+    } else if (mode === 'car') {
+      // Driving pose
+      this.root.setEulerAngles(0, degYaw, this.currentBank * 0.4);
+      this.bodyRoot.setLocalPosition(-0.45, 0.35, 0); // driver seat
+      this.bodyRoot.setLocalEulerAngles(6, 0, 0);
+      this.headRoot.setLocalEulerAngles(0, 0, 0);
+
+      // Seated legs
+      this.legL.setLocalPosition(-0.19, 0.55, 0.2);
+      this.legR.setLocalPosition(0.19, 0.55, 0.2);
+      this.legL.setLocalEulerAngles(75, -5, 0);
+      this.legR.setLocalEulerAngles(75, 5, 0);
+
+      // Hands on steering wheel
+      this.armL.setLocalEulerAngles(60, 18, -12);
+      this.armR.setLocalEulerAngles(60, -18, 12);
 
     } else if (mode === 'swimming') {
       // Swimming prone crawl pose
@@ -189,7 +214,8 @@ export class PlayerView {
 
         // Footstep trigger at gait peaks
         if (Math.floor(this.walkPhase / Math.PI) !== Math.floor(prevPhase / Math.PI)) {
-          this.onStep?.('grass');
+          const isRoad = Math.abs(snapshot.position.x) < 5 || Math.abs(snapshot.position.z) < 5;
+          this.onStep?.(isRoad ? 'asphalt' : 'grass');
         }
 
         const legSwing = Math.sin(this.walkPhase) * Math.min(42, speed * 5.5);
@@ -206,7 +232,12 @@ export class PlayerView {
         this.legR.setLocalEulerAngles(-legSwing, 0, 0);
 
         this.armL.setLocalEulerAngles(armSwing, 0, 10);
-        this.armR.setLocalEulerAngles(-armSwing, 0, -10);
+        if (isHoldingItem) {
+          // Hand holding item raised
+          this.armR.setLocalEulerAngles(48, -12, 0);
+        } else {
+          this.armR.setLocalEulerAngles(-armSwing, 0, -10);
+        }
 
       } else if (mode === 'airborne') {
         // Airborne pose
@@ -220,7 +251,11 @@ export class PlayerView {
         this.legR.setLocalEulerAngles(18, 0, 6);
 
         this.armL.setLocalEulerAngles(-35, 20, 25);
-        this.armR.setLocalEulerAngles(-35, -20, -25);
+        if (isHoldingItem) {
+          this.armR.setLocalEulerAngles(48, -12, 0);
+        } else {
+          this.armR.setLocalEulerAngles(-35, -20, -25);
+        }
 
       } else {
         // Idle breathing
@@ -235,10 +270,15 @@ export class PlayerView {
         this.legR.setLocalEulerAngles(0, 0, 0);
 
         this.armL.setLocalEulerAngles(Math.sin(Date.now() * 0.002) * 5, 0, 8);
-        this.armR.setLocalEulerAngles(-Math.sin(Date.now() * 0.002) * 5, 0, -8);
+        if (isHoldingItem) {
+          this.armR.setLocalEulerAngles(48, -12, 0);
+        } else {
+          this.armR.setLocalEulerAngles(-Math.sin(Date.now() * 0.002) * 5, 0, -8);
+        }
       }
     }
 
+    this.handProps.update(simTime);
     this.prevMode = mode;
   }
 }

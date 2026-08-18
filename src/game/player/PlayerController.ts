@@ -3,7 +3,7 @@ import type { InputFrame } from '../input/InputState';
 import type { CollisionWorld } from './CollisionWorld';
 import type { WaterSystem } from '../water/WaterSystem';
 
-export type PlayerMode = 'grounded' | 'airborne' | 'swimming' | 'bike' | 'raft';
+export type PlayerMode = 'grounded' | 'airborne' | 'swimming' | 'bike' | 'raft' | 'car';
 export type PlayerSnapshot = { position: Vec3; yaw: number; pitch: number; verticalVelocity: number; mode: PlayerMode };
 
 export class PlayerController {
@@ -17,11 +17,11 @@ export class PlayerController {
   }
 
   get snapshot(): PlayerSnapshot { return { ...this.state, position: { ...this.state.position } }; }
-  setExternal(position: Vec3, yaw: number, mode: 'bike' | 'raft') { this.state = { ...this.state, position: { ...position }, yaw, mode, verticalVelocity: 0 }; }
+  setExternal(position: Vec3, yaw: number, mode: 'bike' | 'raft' | 'car') { this.state = { ...this.state, position: { ...position }, yaw, mode, verticalVelocity: 0 }; }
   resumeGrounded(position: Vec3) { this.state = { ...this.state, position: { ...position, y: this.collision.heightAt(position.x, position.z) }, mode: 'grounded', verticalVelocity: 0 }; }
 
   update(dt: number, input: InputFrame): PlayerSnapshot {
-    if (this.state.mode === 'bike' || this.state.mode === 'raft') return this.snapshot;
+    if (this.state.mode === 'bike' || this.state.mode === 'raft' || this.state.mode === 'car') return this.snapshot;
     const capped = Math.min(dt, 1 / 20);
     this.state.yaw -= input.lookX * 0.0035;
     this.state.pitch = Math.max(-55, Math.min(20, this.state.pitch - input.lookY * 0.18));

@@ -122,6 +122,90 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* Top Pill Bar (Brookhaven Style) */
+.top-bar {
+  pointer-events: auto;
+  position: absolute;
+  left: max(10px, env(safe-area-inset-left));
+  top: max(42px, calc(env(safe-area-inset-top) + 36px));
+  display: flex;
+  gap: 8px;
+}
+
+.top-pill-btn {
+  pointer-events: auto;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 252, 242, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #1e3626;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.top-pill-btn:active {
+  transform: scale(0.94);
+  background: rgba(240, 248, 238, 0.95);
+}
+
+/* Slide-out Props Drawer */
+.props-drawer {
+  pointer-events: auto;
+  position: absolute;
+  left: max(10px, env(safe-area-inset-left));
+  top: max(90px, calc(env(safe-area-inset-top) + 84px));
+  width: 190px;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: drawerIn 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes drawerIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.prop-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(244, 247, 242, 0.9);
+  color: #223829;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.08s ease;
+}
+
+.prop-btn:active {
+  background: #e2edd8;
+  transform: scale(0.96);
+}
+
+.prop-icon {
+  font-size: 18px;
+}
+
 .look-pad {
   pointer-events: auto;
   position: absolute;
@@ -161,7 +245,7 @@ body {
   pointer-events: none;
 }
 
-/* Action & Jump Buttons */
+/* Action, Jump & Horn Buttons */
 .action-button {
   pointer-events: auto;
   position: absolute;
@@ -204,6 +288,21 @@ body {
   font-size: 11px;
   font-weight: 700;
   margin-top: 2px;
+}
+
+.action-button.horn {
+  bottom: max(24px, calc(env(safe-area-inset-bottom) + 12px));
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 240, 200, 0.95), rgba(255, 215, 140, 0.92));
+  border-color: #f0c050;
+  color: #4a3410;
+  font-size: 20px;
 }
 
 .action-button.interact {
@@ -341,9 +440,9 @@ body {
   to { opacity: 1; transform: scale(1.2); }
 }
 
-/* Hide touch joystick on desktop mice, show buttons only for touch */
+/* Hide touch joystick on fine pointers, keep top bar and interactive buttons accessible */
 @media (pointer: fine) {
-  .move-pad, .look-pad, .action-button {
+  .move-pad, .look-pad, .action-button.jump {
     display: none;
   }
 }

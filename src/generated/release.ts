@@ -1,7 +1,7 @@
 export const APP_VERSION = "0.1.0";
-export const COMMIT_SHA = "17a8f0405dba1b38dc0ed88efa979ca271fe4069";
-export const BUILD_TIME = "2026-08-18T09:59:37.644Z";
-export const TINY_ENV = "dev";
+export const COMMIT_SHA = "84cbfc7e8b785f3df5dab847b255da3d286972ba";
+export const BUILD_TIME = "2026-08-18T10:25:36.668Z";
+export const TINY_ENV = "local";
 
 export type ReleaseMetadata = { version: string; commitSha: string; buildTime: string; environment: string };
 export const RELEASE: ReleaseMetadata = { version: APP_VERSION, commitSha: COMMIT_SHA, buildTime: BUILD_TIME, environment: TINY_ENV };
