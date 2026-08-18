@@ -20,6 +20,7 @@ export class TouchInput {
     movePad.addEventListener('pointermove', this.move);
     movePad.addEventListener('pointerup', this.endMove);
     movePad.addEventListener('pointercancel', this.endMove);
+    movePad.addEventListener('pointerleave', this.endMove);
 
     lookPad.addEventListener('pointerdown', this.startLook);
     lookPad.addEventListener('pointermove', this.look);
@@ -28,6 +29,14 @@ export class TouchInput {
 
     jump.addEventListener('pointerdown', () => this.state.pressJump());
     action.addEventListener('pointerdown', () => this.state.pressInteract());
+
+    // Global safety net: if the pointer is released anywhere on the page,
+    // ensure the joystick resets if it was our active stick pointer.
+    window.addEventListener('pointerup', this.globalPointerUp);
+    window.addEventListener('pointercancel', this.globalPointerUp);
+
+    // Reset on visibility change (e.g. app backgrounded)
+    document.addEventListener('visibilitychange', this.resetAll);
   }
 
   private startMove = (e: PointerEvent) => {
@@ -69,6 +78,26 @@ export class TouchInput {
     }
   };
 
+  private globalPointerUp = (e: PointerEvent) => {
+    if (e.pointerId === this.stickPointer) {
+      this.endMove(e);
+    }
+    if (e.pointerId === this.lookPointer) {
+      this.lookPointer = null;
+    }
+  };
+
+  private resetAll = () => {
+    if (document.hidden) {
+      this.stickPointer = null;
+      this.lookPointer = null;
+      this.state.setMove(0, 0);
+      if (this.knob) {
+        this.knob.style.transform = 'translate(0px, 0px)';
+      }
+    }
+  };
+
   private startLook = (e: PointerEvent) => {
     this.lookPointer = e.pointerId;
     this.lookLast = { x: e.clientX, y: e.clientY };
@@ -85,3 +114,4 @@ export class TouchInput {
     if (e.pointerId === this.lookPointer) this.lookPointer = null;
   };
 }
+
