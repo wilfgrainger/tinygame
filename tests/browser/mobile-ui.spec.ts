@@ -28,8 +28,7 @@ async function openAuthenticatedGame(page: Page) {
   await expect(page.locator('#game-canvas')).toBeVisible({ timeout: 15_000 });
 }
 
-function offsetFromKnob(element: Element) {
-  const transform = getComputedStyle(element).transform;
+function offsetFromTransform(transform: string) {
   if (transform === 'none') return { x: 0, y: 0 };
   const matrix = new DOMMatrixReadOnly(transform);
   return { x: matrix.m41, y: matrix.m42 };
@@ -54,11 +53,9 @@ test('focus loss clears an active movement stick so movement cannot become phant
   await openAuthenticatedGame(page);
 
   const pad = page.locator('.move-pad');
+  const knob = page.locator('.move-pad .stick-knob');
   const box = await pad.boundingBox();
   expect(box).not.toBeNull();
-
-  const knob = await page.locator('.move-pad .stick-knob').elementHandle();
-  expect(knob).not.toBeNull();
 
   const centreX = box!.x + box!.width / 2;
   const centreY = box!.y + box!.height / 2;
@@ -66,15 +63,20 @@ test('focus loss clears an active movement stick so movement cannot become phant
   await page.mouse.down();
   await page.mouse.move(centreX + 30, centreY - 12);
 
-  const moved = await knob!.evaluate(offsetFromKnob);
+  const movedTransform = await knob.evaluate((element) => getComputedStyle(element).transform);
+  const moved = offsetFromTransform(movedTransform);
   expect(Math.hypot(moved.x, moved.y)).toBeGreaterThan(10);
 
-  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  const afterBlur = await page.evaluate(() => {
+    window.dispatchEvent(new Event('blur'));
+    const element = document.querySelector('.move-pad .stick-knob');
+    if (!element) throw new Error('movement knob missing');
+    const transform = getComputedStyle(element).transform;
+    if (transform === 'none') return { x: 0, y: 0 };
+    const matrix = new DOMMatrixReadOnly(transform);
+    return { x: matrix.m41, y: matrix.m42 };
+  });
 
-  await expect.poll(async () => {
-    const offset = await knob!.evaluate(offsetFromKnob);
-    return Math.hypot(offset.x, offset.y);
-  }).toBeLessThan(0.1);
-
+  expect(Math.hypot(afterBlur.x, afterBlur.y)).toBeLessThan(0.1);
   await page.mouse.up();
 });
