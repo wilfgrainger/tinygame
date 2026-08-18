@@ -30,13 +30,10 @@ export class TouchInput {
     jump.addEventListener('pointerdown', () => this.state.pressJump());
     action.addEventListener('pointerdown', () => this.state.pressInteract());
 
-    // Global safety net: if the pointer is released anywhere on the page,
-    // ensure the joystick resets if it was our active stick pointer.
     window.addEventListener('pointerup', this.globalPointerUp);
     window.addEventListener('pointercancel', this.globalPointerUp);
-
-    // Reset on visibility change (e.g. app backgrounded)
-    document.addEventListener('visibilitychange', this.resetAll);
+    window.addEventListener('blur', this.resetAll);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   private startMove = (e: PointerEvent) => {
@@ -58,7 +55,6 @@ export class TouchInput {
 
     const normX = (Math.cos(angle) * clampedDist) / maxRadius;
     const normY = (Math.sin(angle) * clampedDist) / maxRadius;
-
     this.state.setMove(normX, -normY);
 
     if (this.knob) {
@@ -69,33 +65,28 @@ export class TouchInput {
   };
 
   private endMove = (e: PointerEvent) => {
-    if (e.pointerId === this.stickPointer) {
-      this.stickPointer = null;
-      this.state.setMove(0, 0);
-      if (this.knob) {
-        this.knob.style.transform = 'translate(0px, 0px)';
-      }
-    }
+    if (e.pointerId !== this.stickPointer) return;
+    this.resetMove();
   };
 
-  private globalPointerUp = (e: PointerEvent) => {
-    if (e.pointerId === this.stickPointer) {
-      this.endMove(e);
-    }
-    if (e.pointerId === this.lookPointer) {
-      this.lookPointer = null;
-    }
+  private resetMove = () => {
+    this.stickPointer = null;
+    this.state.setMove(0, 0);
+    if (this.knob) this.knob.style.transform = 'translate(0px, 0px)';
   };
 
   private resetAll = () => {
-    if (document.hidden) {
-      this.stickPointer = null;
-      this.lookPointer = null;
-      this.state.setMove(0, 0);
-      if (this.knob) {
-        this.knob.style.transform = 'translate(0px, 0px)';
-      }
-    }
+    this.resetMove();
+    this.lookPointer = null;
+  };
+
+  private onVisibilityChange = () => {
+    if (document.hidden) this.resetAll();
+  };
+
+  private globalPointerUp = (e: PointerEvent) => {
+    if (e.pointerId === this.stickPointer) this.resetMove();
+    if (e.pointerId === this.lookPointer) this.lookPointer = null;
   };
 
   private startLook = (e: PointerEvent) => {
@@ -114,4 +105,3 @@ export class TouchInput {
     if (e.pointerId === this.lookPointer) this.lookPointer = null;
   };
 }
-
