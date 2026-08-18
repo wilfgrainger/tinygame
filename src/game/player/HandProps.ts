@@ -1,13 +1,14 @@
 import * as pc from 'playcanvas';
 import { material, primitive } from '../world/meshFactory';
 
-export type PropType = 'none' | 'coffee' | 'icecream' | 'flashlight' | 'balloon';
+export type PropType = 'none' | 'coffee' | 'icecream' | 'flashlight' | 'balloon' | 'waterhose';
 
 export class HandProps {
   private readonly root = new pc.Entity('HandPropRoot');
   private currentType: PropType = 'none';
   private flashlightLight: pc.Entity | null = null;
   private balloonEntity: pc.Entity | null = null;
+  private hoseWaterEmitter: pc.Entity | null = null;
 
   // Rich Materials
   private whiteCeramic = material(new pc.Color(0.96, 0.96, 0.96), 0.6, 0.2);
@@ -23,6 +24,9 @@ export class HandProps {
   private torchLens = material(new pc.Color(1.0, 0.96, 0.75), 0.9, 0, 1.0, new pc.Color(0.95, 0.88, 0.5));
   private balloonGloss = material(new pc.Color(0.95, 0.18, 0.22), 0.92, 0.15, 0.95);
   private stringMat = material(new pc.Color(0.90, 0.90, 0.92), 0.1);
+  private hoseBrass = material(new pc.Color(0.85, 0.72, 0.28), 0.85, 0.65);
+  private hoseRed = material(new pc.Color(0.88, 0.22, 0.20), 0.6, 0.1);
+  private waterDroplet = material(new pc.Color(0.40, 0.78, 0.98), 0.9, 0.1, 0.7);
 
   constructor(private readonly app: pc.Application, private readonly handMount: pc.Entity) {
     this.handMount.addChild(this.root);
@@ -49,6 +53,8 @@ export class HandProps {
       this.buildFlashlight();
     } else if (type === 'balloon') {
       this.buildBalloon();
+    } else if (type === 'waterhose') {
+      this.buildWaterHose();
     }
   }
 
@@ -59,6 +65,7 @@ export class HandProps {
     }
     this.flashlightLight = null;
     this.balloonEntity = null;
+    this.hoseWaterEmitter = null;
   }
 
   private buildCoffee() {
@@ -120,6 +127,24 @@ export class HandProps {
     this.balloonEntity = balloonGroup;
   }
 
+  private buildWaterHose() {
+    const hoseNozzle = primitive(this.app, 'HoseNozzle', 'cylinder', this.hoseBrass, new pc.Vec3(0, 0, -0.22), new pc.Vec3(0.14, 0.52, 0.14), this.root);
+    hoseNozzle.setLocalEulerAngles(-90, 0, 0);
+
+    const hoseBody = primitive(this.app, 'HoseGrip', 'cylinder', this.hoseRed, new pc.Vec3(0, 0, 0.06), new pc.Vec3(0.16, 0.28, 0.16), this.root);
+    hoseBody.setLocalEulerAngles(-90, 0, 0);
+
+    const streamRoot = new pc.Entity('WaterStream');
+    streamRoot.setLocalPosition(0, 0, -0.52);
+    this.root.addChild(streamRoot);
+
+    for (let i = 0; i < 4; i++) {
+      primitive(this.app, `Drop_${i}`, 'sphere', this.waterDroplet, new pc.Vec3(0, -i * 0.12, -i * 0.75), new pc.Vec3(0.18 + i * 0.08, 0.18 + i * 0.08, 0.28 + i * 0.15), streamRoot);
+    }
+
+    this.hoseWaterEmitter = streamRoot;
+  }
+
   update(time: number) {
     if (this.balloonEntity) {
       const swayX = Math.sin(time * 2.4) * 8;
@@ -127,6 +152,11 @@ export class HandProps {
       const bob = Math.sin(time * 3.2) * 0.06;
       this.balloonEntity.setLocalPosition(0.1, 1.45 + bob, -0.1);
       this.balloonEntity.setLocalEulerAngles(swayX, 0, swayZ);
+    }
+
+    if (this.hoseWaterEmitter) {
+      const jiggle = Math.sin(time * 12) * 0.06;
+      this.hoseWaterEmitter.setLocalPosition(jiggle, -jiggle, -0.52);
     }
   }
 }

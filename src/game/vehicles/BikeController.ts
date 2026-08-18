@@ -33,5 +33,9 @@ export class BikeController {
     this.state.mounted = false; this.state.speed = 0;
     return { x: chosen.x, y: this.collision.heightAt(chosen.x, chosen.z), z: chosen.z };
   }
+  teleport(position: Vec3, yaw = Math.PI) {
+    this.state = { position: { ...position }, yaw, mounted: false, speed: 0 };
+  }
   reset() { this.state = { position: { ...this.spawn }, yaw: Math.PI, mounted: false, speed: 0 }; }
 }
+

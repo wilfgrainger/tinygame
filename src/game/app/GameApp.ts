@@ -17,9 +17,12 @@ import { heightAt, WATER_SURFACE_Y } from '../world/heightfield';
 import { InteractionSystem } from '../world/InteractionSystem';
 import { WaterSystem } from '../water/WaterSystem';
 import { HomeSystem } from '../home/HomeSystem';
+import { HouseManager } from '../home/HouseManager';
+import { VillagerManager } from '../world/VillagerManager';
 import { BikeController } from '../vehicles/BikeController';
 import { CarController } from '../vehicles/CarController';
 import { RaftController } from '../vehicles/RaftController';
+import { VehicleSpawner, PAINT_COLORS } from '../vehicles/VehicleSpawner';
 import type { Hud } from '../ui/Hud';
 
 export class GameApp {
@@ -41,7 +44,7 @@ export class GameApp {
     this.app = app;
     app.start();
 
-    // Sound engine
+    // Zero-Byte Procedural Sound & Music Engine
     const sound = new SoundFx();
 
     // Scene ambient lighting
@@ -85,6 +88,16 @@ export class GameApp {
     const atmosphere = new Atmosphere(app);
     const runtime = new WorldBuilder(app).build();
 
+    // Animated NPC Villagers
+    const villagers = new VillagerManager(app);
+    villagers.buildAll();
+
+    // Brookhaven House Claiming System
+    const house = new HouseManager();
+
+    // Vehicle Spawner
+    const vehicleSpawner = new VehicleSpawner();
+
     const spawn = SPAWN_POINTS.find((point) => point.id === bootstrap.profile.lastSpawnId) ?? SPAWN_POINTS[0]!;
     const collision = new CollisionWorld(heightAt, runtime.colliders, spawn.position);
     const water = new WaterSystem(WATER_BOUNDS, WATER_SURFACE_Y);
@@ -97,8 +110,26 @@ export class GameApp {
     this.keyboard = new KeyboardInput(input, this.canvas);
     new TouchInput(input, this.hud.movePad, this.hud.lookPad, this.hud.jumpButton, this.hud.actionButton);
 
-    // Hand Props integration
-    this.hud.onSelectProp((prop) => {
+    // Speed boost state for drinking coffee
+    let coffeeSpeedBoostTimer = 0;
+
+    // Use prop action (Drinking coffee, eating ice cream, spraying water hose)
+    const useCurrentProp = (prop: string) => {
+      if (prop === 'coffee') {
+        sound.slurp();
+        coffeeSpeedBoostTimer = 6.0;
+        this.hud.showToast('⚡ Coffee drank! Speed Boost for 6s!');
+      } else if (prop === 'icecream') {
+        sound.crunch();
+        this.hud.showToast('🍦 Delicious strawberry crunch!');
+      } else if (prop === 'waterhose') {
+        sound.waterHose();
+        this.hud.showToast('💦 Spraying water hose!');
+      }
+    };
+
+    // HUD Callback Wiring
+    this.hud.onSelectPropCallback = (prop) => {
       view.setProp(prop);
       if (prop === 'coffee') {
         sound.slurp();
@@ -112,17 +143,41 @@ export class GameApp {
       } else if (prop === 'balloon') {
         sound.click();
         this.hud.showToast('Holding Red Balloon 🎈');
+      } else if (prop === 'waterhose') {
+        sound.waterHose();
+        this.hud.showToast('Holding Fire Hose 💦');
       }
-    });
+    };
 
-    // Keyboard prop shortcuts
+    this.hud.onSelectRoleCallback = (role) => {
+      view.setRole(role);
+      sound.cheer();
+    };
+
+    this.hud.onSelectEmoteCallback = (emote) => {
+      view.playEmote(emote);
+      if (emote === 'cheer') sound.cheer();
+      else sound.click();
+    };
+
+    this.hud.onToggleMusicCallback = () => sound.toggleMusic();
+    this.hud.onUsePropCallback = (prop) => useCurrentProp(prop);
+
+    // Keyboard Shortcuts
     this.keydownHandler = (e: KeyboardEvent) => {
       if (e.key === '1') this.hud.selectProp('coffee');
       else if (e.key === '2') this.hud.selectProp('icecream');
       else if (e.key === '3') this.hud.selectProp('flashlight');
       else if (e.key === '4') this.hud.selectProp('balloon');
+      else if (e.key === '5') this.hud.selectProp('waterhose');
       else if (e.key === '0') this.hud.selectProp('none');
+      else if (e.key === 'f' || e.key === 'F') useCurrentProp(view.activeProp);
       else if (e.key === 'h' || e.key === 'H') sound.carHorn();
+      else if (e.key === 'm' || e.key === 'M') {
+        const on = sound.toggleMusic();
+        this.hud.musicButton.classList.toggle('active', on);
+        this.hud.showToast(on ? '🎶 Town Music: ON' : '🔇 Town Music: OFF', 1.8);
+      }
     };
 
     window.addEventListener('keydown', this.keydownHandler);
@@ -144,6 +199,20 @@ export class GameApp {
     const bike = new BikeController({ x: 15, y: heightAt(15, 7), z: 7 }, collision);
     const car = new CarController({ x: 5, y: heightAt(5, 8), z: 8 }, collision);
     const raft = new RaftController({ x: 50, y: WATER_SURFACE_Y + 0.15, z: 59 }, water);
+
+    // Vehicle Spawner Callback
+    this.hud.onSpawnVehicleCallback = (type, color) => {
+      vehicleSpawner.spawn(type, color);
+      sound.carHorn();
+      const pos = { x: -6.5, y: heightAt(-6.5, -4.5) + 0.65, z: -4.5 };
+      if (type === 'car') {
+        car.dismount();
+        car.teleport(pos, 0);
+      } else {
+        bike.dismount();
+        bike.teleport(pos, 0);
+      }
+    };
 
     let cupboardOpen = false;
     let bikeWheelAngle = 0;
@@ -168,6 +237,28 @@ export class GameApp {
 
     // Brookhaven Town Roleplay Interactions
     interactions.register({
+      id: 'houseClaim',
+      label: house.isClaimed ? (house.isLocked ? 'Unlock Door 🔓' : 'Lock Door 🔒') : 'Claim House 🏠',
+      position: runtime.houseClaimPosition,
+      radius: 2.8,
+      run: () => {
+        const res = house.claim(bootstrap.profile.playerName || 'Explorer');
+        sound.doorLock(house.isLocked);
+        this.hud.showToast(res.message, 3.0);
+      }
+    });
+
+    interactions.register({
+      id: 'vehicleTerminal',
+      label: 'Vehicle Spawner 🏎️',
+      position: runtime.vehicleSpawnPosition,
+      radius: 2.8,
+      run: () => {
+        this.hud.vehicleDock.classList.toggle('open');
+      }
+    });
+
+    interactions.register({
       id: 'cafe',
       label: 'Brew Coffee ☕',
       position: runtime.cafeCounterPosition,
@@ -175,18 +266,19 @@ export class GameApp {
       run: () => {
         sound.coffeeBrew();
         view.setProp('coffee');
+        this.hud.selectProp('coffee');
         this.hud.showToast('Brewed a fresh hot latte! ☕');
       }
     });
 
     interactions.register({
       id: 'grocery',
-      label: 'Checkout 🛒',
+      label: 'Scan Items 🛒',
       position: runtime.groceryRegisterPosition,
       radius: 2.6,
       run: () => {
         sound.cashRegister();
-        this.hud.showToast('Scanned fresh groceries! 🛒');
+        this.hud.showToast('Scanned fresh groceries at Fresh Mart! 🛒');
       }
     });
 
@@ -196,8 +288,9 @@ export class GameApp {
       position: runtime.townHallPodiumPosition,
       radius: 2.6,
       run: () => {
-        sound.click();
-        this.hud.showToast('Mayor: Welcome everyone to TinyTown!');
+        sound.cheer();
+        view.playEmote('wave');
+        this.hud.showToast('Mayor Speech: TinyWorld is thriving! 🏛️');
       }
     });
 
@@ -214,19 +307,20 @@ export class GameApp {
 
     interactions.register({
       id: 'fridge',
-      label: 'Grab Treat 🍦',
+      label: 'Grab Ice Cream 🍦',
       position: runtime.fridgePosition,
       radius: 2.4,
       run: () => {
         sound.slurp();
         view.setProp('icecream');
-        this.hud.showToast('Grabbed delicious ice cream! 🍦');
+        this.hud.selectProp('icecream');
+        this.hud.showToast('Grabbed delicious strawberry ice cream! 🍦');
       }
     });
 
     interactions.register({
       id: 'lamp',
-      label: 'Toggle Lamp',
+      label: 'Toggle Lamp 💡',
       position: runtime.lampPosition,
       radius: 2.4,
       run: async () => {
@@ -239,24 +333,26 @@ export class GameApp {
 
     interactions.register({
       id: 'chair',
-      label: 'Sit on Sofa',
+      label: 'Sit on Sofa 🪑',
       position: runtime.chairPosition,
       radius: 2.4,
       run: () => {
         sound.click();
+        view.playEmote('sit', 5.0);
         this.hud.showToast('Relaxing comfortably on the living room sofa.');
       }
     });
 
     interactions.register({
       id: 'cupboard',
-      label: 'Open Wardrobe',
+      label: 'Open Wardrobe 🚪',
       position: runtime.cupboardPosition,
       radius: 2.4,
       run: () => {
         sound.click();
         cupboardOpen = !cupboardOpen;
         runtime.cupboardDoor.setEulerAngles(0, cupboardOpen ? 75 : 0, 0);
+        this.hud.rolesDock.classList.add('open');
       }
     });
 
@@ -281,7 +377,6 @@ export class GameApp {
       camera.lookAt(camLook);
     };
 
-
     const syncBikeVisual = () => {
       const state = bike.snapshot;
       const travelled = Math.hypot(state.position.x - previousBikePosition.x, state.position.z - previousBikePosition.z);
@@ -302,11 +397,9 @@ export class GameApp {
       runtime.carEntity.setPosition(state.position.x, state.position.y + 0.55, state.position.z);
       runtime.carEntity.setEulerAngles(0, (state.yaw * 180) / Math.PI, 0);
 
-      // Front wheel steering angle
       for (const mount of runtime.carFrontWheelMounts) {
         mount.setLocalEulerAngles(0, state.steerAngle, 0);
       }
-      // All 4 wheels spinning
       for (const pivot of runtime.carWheelPivots) {
         pivot.setLocalEulerAngles(carWheelAngle, 0, 0);
       }
@@ -314,6 +407,8 @@ export class GameApp {
 
     app.on('update', (dt: number) => {
       simTime += dt;
+      if (coffeeSpeedBoostTimer > 0) coffeeSpeedBoostTimer -= dt;
+
       this.keyboard?.update();
       const frame = input.snapshot();
       let snap = player.snapshot;
@@ -354,6 +449,13 @@ export class GameApp {
         }
       } else {
         this.hud.setCarMode(false);
+
+        // Apply coffee speed boost if active
+        if (coffeeSpeedBoostTimer > 0) {
+          frame.moveX *= 1.35;
+          frame.moveY *= 1.35;
+        }
+
         snap = player.update(dt, frame);
 
         if (prevMode === 'airborne' && snap.mode === 'grounded') {
@@ -397,7 +499,7 @@ export class GameApp {
         ? Math.abs(car.snapshot.speed)
         : snap.mode === 'bike'
         ? Math.abs(bike.snapshot.speed)
-        : (moveMagnitude * (snap.mode === 'swimming' ? 3.6 : 6.0));
+        : (moveMagnitude * (snap.mode === 'swimming' ? 3.6 : (coffeeSpeedBoostTimer > 0 ? 8.2 : 6.0)));
 
       view.sync(
         snap.position,
@@ -408,6 +510,8 @@ export class GameApp {
         car.snapshot.steerAngle / 32
       );
 
+      // Update NPC Villagers
+      villagers.update(simTime, snap.position);
 
       updateCamera(snap.position, snap.yaw, snap.pitch, dt, snap.mode === 'car');
 
@@ -450,6 +554,7 @@ export class GameApp {
       }
 
       this.hud.setAction(action);
+      this.hud.update(dt);
       atmosphere.setInteractionTarget(targetMarkerPos, simTime);
       atmosphere.update(dt, simTime, runtime.chimneyEmitters, runtime.fountainEmitter);
     });
@@ -466,7 +571,6 @@ export class GameApp {
     };
     window.addEventListener('resize', this.resizeHandler);
     this.resizeHandler();
-
   }
 
   destroy() {

@@ -83,7 +83,12 @@ export class CarController {
     return { x: chosen.x, y: this.collision.heightAt(chosen.x, chosen.z), z: chosen.z };
   }
 
+  teleport(position: Vec3, yaw = 0) {
+    this.state = { position: { ...position }, yaw, mounted: false, speed: 0, steerAngle: 0 };
+  }
+
   reset() {
     this.state = { position: { ...this.spawn }, yaw: 0, mounted: false, speed: 0, steerAngle: 0 };
   }
 }
+

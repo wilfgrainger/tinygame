@@ -1,11 +1,15 @@
 /**
  * Zero-byte procedural Web Audio synthesizer.
  * Provides rich, responsive audio feedback for footsteps, ambient interactions,
- * town roleplay props, doorbells, barcode scanners, car horns, and discovery fanfares.
+ * town roleplay props, doorbells, barcode scanners, car horns, discovery fanfares,
+ * and relaxing procedural town background music.
  */
 export class SoundFx {
   private ctx: AudioContext | null = null;
   private unlocked = false;
+  private musicPlaying = false;
+  private musicTimer: number | null = null;
+  private musicGain: GainNode | null = null;
 
   constructor() {
     const unlock = () => {
@@ -47,6 +51,108 @@ export class SoundFx {
     return this.ctx;
   }
 
+  // --- Background Music Synthesizer ---
+  startMusic() {
+    if (this.musicPlaying) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    this.musicPlaying = true;
+    this.musicGain = ctx.createGain();
+    this.musicGain.gain.setValueAtTime(0.045, ctx.currentTime);
+    this.musicGain.connect(ctx.destination);
+
+    // Warm chord progression in C Major / A Minor: C -> G -> Am -> F
+    const chords = [
+      [261.63, 329.63, 392.00], // C (C4, E4, G4)
+      [196.00, 246.94, 293.66], // G (G3, B3, D4)
+      [220.00, 261.63, 329.63], // Am (A3, C4, E4)
+      [174.61, 220.00, 261.63]  // F (F3, A3, C4)
+    ];
+
+    const melodyNotes = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+    let step = 0;
+
+    const playBar = () => {
+      if (!this.musicPlaying || !this.ctx || !this.musicGain) return;
+      const now = this.ctx.currentTime;
+      const chord = chords[step % chords.length]!;
+
+      // Play soft warm pad chord
+      for (const freq of chord) {
+        const osc = this.ctx.createOscillator();
+        const chordGain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+
+        chordGain.gain.setValueAtTime(0.001, now);
+        chordGain.gain.linearRampToValueAtTime(0.06, now + 0.4);
+        chordGain.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
+
+        osc.connect(chordGain);
+        chordGain.connect(this.musicGain);
+
+        osc.start(now);
+        osc.stop(now + 2.85);
+      }
+
+      // Play light melodic bell plucks
+      for (let i = 0; i < 4; i++) {
+        const pluckTime = now + i * 0.7;
+        const noteIdx = Math.floor(Math.random() * melodyNotes.length);
+        const freq = melodyNotes[noteIdx]!;
+
+        const osc = this.ctx.createOscillator();
+        const pluckGain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, pluckTime);
+
+        pluckGain.gain.setValueAtTime(0.035, pluckTime);
+        pluckGain.gain.exponentialRampToValueAtTime(0.0001, pluckTime + 0.6);
+
+        osc.connect(pluckGain);
+        pluckGain.connect(this.musicGain);
+
+        osc.start(pluckTime);
+        osc.stop(pluckTime + 0.62);
+      }
+
+      step++;
+      this.musicTimer = window.setTimeout(playBar, 2800);
+    };
+
+    playBar();
+  }
+
+  stopMusic() {
+    this.musicPlaying = false;
+    if (this.musicTimer) {
+      window.clearTimeout(this.musicTimer);
+      this.musicTimer = null;
+    }
+    if (this.musicGain && this.ctx) {
+      this.musicGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+      this.musicGain = null;
+    }
+  }
+
+  toggleMusic(): boolean {
+    if (this.musicPlaying) {
+      this.stopMusic();
+      return false;
+    } else {
+      this.startMusic();
+      return true;
+    }
+  }
+
+  get isMusicPlaying(): boolean {
+    return this.musicPlaying;
+  }
+
+  // --- Sound Effects ---
   footstep(surface: 'grass' | 'wood' | 'stone' | 'sand' | 'asphalt' = 'grass') {
     const ctx = this.getContext();
     if (!ctx) return;
@@ -163,7 +269,6 @@ export class SoundFx {
     }
   }
 
-
   carHorn() {
     const ctx = this.getContext();
     if (!ctx) return;
@@ -194,7 +299,6 @@ export class SoundFx {
     if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Ding (high) - Dong (low)
     const tones = [
       { freq: 880, start: 0, dur: 0.45 },
       { freq: 659.25, start: 0.35, dur: 0.65 }
@@ -218,12 +322,112 @@ export class SoundFx {
     }
   }
 
+  doorLock(locked: boolean) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const freqs = locked ? [520, 390] : [390, 520];
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.08);
+
+      gain.gain.setValueAtTime(0.14, now + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.1);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + i * 0.08);
+      osc.stop(now + i * 0.08 + 0.1);
+    });
+  }
+
+  waterHose() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const noise = ctx.createBufferSource();
+    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.6), ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < buffer.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.2;
+    }
+    noise.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1400, now);
+    filter.Q.setValueAtTime(2.5, now);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.16, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    noise.start(now);
+    noise.stop(now + 0.6);
+  }
+
+  crunch() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    for (let i = 0; i < 3; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320 + Math.random() * 200, now + i * 0.05);
+
+      gain.gain.setValueAtTime(0.15, now + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.06);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + i * 0.05);
+      osc.stop(now + i * 0.05 + 0.06);
+    }
+  }
+
+  cheer() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const chords = [523.25, 659.25, 783.99, 1046.50];
+    chords.forEach((f, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, now + idx * 0.06);
+
+      gain.gain.setValueAtTime(0.15, now + idx * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.4);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + idx * 0.06);
+      osc.stop(now + idx * 0.06 + 0.4);
+    });
+  }
+
   cashRegister() {
     const ctx = this.getContext();
     if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Crisp scanner beep
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
@@ -246,9 +450,8 @@ export class SoundFx {
     if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Steam hiss + gentle bubbling
     const noise = ctx.createBufferSource();
-    const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.5), ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < buffer.length; i += 1) {
       data[i] = (Math.random() * 2 - 1) * 0.15;
@@ -363,7 +566,6 @@ export class SoundFx {
     if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Upbeat celebratory pentatonic fanfare: C5 -> E5 -> G5 -> A5 -> C6
     const notes = [523.25, 659.25, 783.99, 880.0, 1046.5];
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
