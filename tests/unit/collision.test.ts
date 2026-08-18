@@ -31,4 +31,16 @@ describe('CollisionWorld', () => {
     expect(next.x).toBe(2);
     expect(next.y).toBeCloseTo(0.4);
   });
+
+  it('rejects a steep continuous slope even when each individual rise is below the step limit', () => {
+    const steep = new CollisionWorld((x) => x * 2, [], { x: 0, y: 0, z: 0 }, 20);
+    const next = steep.resolveMove(
+      { x: 0, y: 0, z: 0 },
+      { x: 0.25, y: 0, z: 0 },
+      0.55,
+      { maxStepHeight: 0.75, maxSlopeDegrees: 40 }
+    );
+    expect(next.x).toBe(0);
+    expect(next.y).toBe(0);
+  });
 });
