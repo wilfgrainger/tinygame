@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CollisionWorld } from '../../src/game/player/CollisionWorld';
+import { heightAt } from '../../src/game/world/heightfield';
 
 const collision = new CollisionWorld(() => 2, [{ minX: 3, maxX: 5, minZ: -1, maxZ: 1 }], { x: 0, y: 2, z: 0 }, 20);
 
@@ -42,5 +43,14 @@ describe('CollisionWorld', () => {
     );
     expect(next.x).toBe(0);
     expect(next.y).toBe(0);
+  });
+
+  it('allows the small authored terrace step on the intended mountain route', () => {
+    const mountain = new CollisionWorld(heightAt, [], { x: 44.91, y: heightAt(44.91, -44), z: -44 }, 80);
+    const from = { x: 44.9091, y: heightAt(44.9091, -44), z: -44 };
+    const delta = { x: 0.0182, y: 0, z: -0.1 };
+    const next = mountain.resolveMove(from, delta, 0.55);
+
+    expect(Math.hypot(next.x - from.x, next.z - from.z)).toBeGreaterThan(0.09);
   });
 });
