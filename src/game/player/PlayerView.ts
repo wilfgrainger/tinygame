@@ -1,6 +1,7 @@
 import * as pc from 'playcanvas';
 import { material, primitive } from '../world/meshFactory';
 import { HandProps, type PropType } from './HandProps';
+import { approachYaw, facingYawForMovement } from './controlModel';
 
 export type FootstepSurface = 'grass' | 'asphalt' | 'wood' | 'stone';
 export type PlayerRole = 'explorer' | 'barista' | 'firefighter' | 'police';
@@ -26,6 +27,8 @@ export class PlayerView {
   private isStepping = false;
   private lastStepPhase = 0;
   private currentMode: 'grounded' | 'airborne' | 'swimming' | 'car' | 'bike' | 'raft' = 'grounded';
+  private visualYaw = 0;
+  private previousWorldPosition: { x: number; z: number } | null = null;
   public onStep?: (surface: FootstepSurface) => void;
 
   // Materials
@@ -207,7 +210,22 @@ export class PlayerView {
   ) {
     this.currentMode = mode;
     this.root.setPosition(pos.x, pos.y, pos.z);
-    this.root.setEulerAngles(0, (yaw * 180) / Math.PI, 0);
+
+    const vehicleMode = mode === 'car' || mode === 'bike' || mode === 'raft';
+    if (vehicleMode) {
+      this.visualYaw = yaw;
+    } else if (this.previousWorldPosition) {
+      const movement = {
+        x: pos.x - this.previousWorldPosition.x,
+        z: pos.z - this.previousWorldPosition.z
+      };
+      const targetYaw = facingYawForMovement(movement, this.visualYaw);
+      this.visualYaw = approachYaw(this.visualYaw, targetYaw, Math.max(0, dt) * 14);
+    } else {
+      this.visualYaw = yaw;
+    }
+    this.previousWorldPosition = { x: pos.x, z: pos.z };
+    this.root.setEulerAngles(0, (this.visualYaw * 180) / Math.PI, 0);
 
     const isMoving = speed > 0.15;
     const holdingProp = this.handProps.current !== 'none';
