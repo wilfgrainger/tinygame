@@ -119,12 +119,18 @@ export class WorldBuilder {
       primitive(this.app, `${name}FlowersY`, 'sphere', this.yellowFlower, new pc.Vec3(sx + 0.35 * scale, 1.55 * scale, d * 0.5 + 0.25), new pc.Vec3(0.35 * scale, 0.35 * scale, 0.35 * scale), houseRoot);
     }
 
-    // Overhanging pitched roof
+    // Overhanging pitched roof (A-frame gable)
     const roofY = h + 0.4 * scale;
-    const rL = primitive(this.app, `${name}RoofL`, 'box', roofMat, new pc.Vec3(0, roofY + 1.2 * scale, -1.4 * scale), new pc.Vec3(w + 1.2 * scale, 0.45 * scale, 4.8 * scale), houseRoot);
-    rL.setLocalEulerAngles(30, 0, 0);
-    const rR = primitive(this.app, `${name}RoofR`, 'box', roofMat, new pc.Vec3(0, roofY + 1.2 * scale, 1.4 * scale), new pc.Vec3(w + 1.2 * scale, 0.45 * scale, 4.8 * scale), houseRoot);
-    rR.setLocalEulerAngles(-30, 0, 0);
+    const roofPitch = 32;
+    const rL = primitive(this.app, `${name}RoofFront`, 'box', roofMat, new pc.Vec3(0, roofY + 1.1 * scale, -1.8 * scale), new pc.Vec3(w + 1.4 * scale, 0.38 * scale, 4.4 * scale), houseRoot);
+    rL.setLocalEulerAngles(-roofPitch, 0, 0);
+
+    const rR = primitive(this.app, `${name}RoofBack`, 'box', roofMat, new pc.Vec3(0, roofY + 1.1 * scale, 1.8 * scale), new pc.Vec3(w + 1.4 * scale, 0.38 * scale, 4.4 * scale), houseRoot);
+    rR.setLocalEulerAngles(roofPitch, 0, 0);
+
+    // Ridge cap along the apex
+    primitive(this.app, `${name}RoofRidge`, 'box', this.darkWood, new pc.Vec3(0, roofY + 2.3 * scale, 0), new pc.Vec3(w + 1.6 * scale, 0.35 * scale, 0.5 * scale), houseRoot);
+
 
     // Stone Chimney
     const chimX = 2.2 * scale;
@@ -220,11 +226,13 @@ export class WorldBuilder {
     // Doorway lintel
     primitive(this.app, 'HomeDoorLintel', 'box', this.darkWood, new pc.Vec3(0, 4.1, -4.5), new pc.Vec3(3.6, 0.45, 0.45), homeRoot);
 
-    // Roof
-    const roofL = primitive(this.app, 'HomeRoofL', 'box', this.terracotta, new pc.Vec3(0, 5.9, -1.8), new pc.Vec3(11.6, 0.48, 5.8), homeRoot);
-    roofL.setLocalEulerAngles(28, 0, 0);
-    const roofR = primitive(this.app, 'HomeRoofR', 'box', this.terracotta, new pc.Vec3(0, 5.9, 1.8), new pc.Vec3(11.6, 0.48, 5.8), homeRoot);
-    roofR.setLocalEulerAngles(-28, 0, 0);
+    // Roof (A-frame gable)
+    const roofL = primitive(this.app, 'HomeRoofFront', 'box', this.terracotta, new pc.Vec3(0, 6.1, -2.4), new pc.Vec3(11.8, 0.45, 5.8), homeRoot);
+    roofL.setLocalEulerAngles(-28, 0, 0);
+    const roofR = primitive(this.app, 'HomeRoofBack', 'box', this.terracotta, new pc.Vec3(0, 6.1, 2.4), new pc.Vec3(11.8, 0.45, 5.8), homeRoot);
+    roofR.setLocalEulerAngles(28, 0, 0);
+    primitive(this.app, 'HomeRoofRidge', 'box', this.darkWood, new pc.Vec3(0, 7.5, 0), new pc.Vec3(12.2, 0.45, 0.6), homeRoot);
+
 
     // Chimney & Emitter
     primitive(this.app, 'HomeChimney', 'box', this.darkStone, new pc.Vec3(3.5, 6.2, 2.2), new pc.Vec3(1.1, 3.8, 1.1), homeRoot);
@@ -346,15 +354,16 @@ export class WorldBuilder {
     primitive(this.app, 'FirePitCoals', 'cylinder', this.terracotta, new pc.Vec3(2.8, 0.35, 2.2), new pc.Vec3(1.4, 0.15, 1.4), groveRoot);
     primitive(this.app, 'FireEmberGlow', 'sphere', this.warmGlow, new pc.Vec3(2.8, 0.45, 2.2), new pc.Vec3(0.6, 0.3, 0.6), groveRoot);
 
-    // Cozy mini tent
+    // Cozy mini tent (A-frame)
     const tent = new pc.Entity('GroveTent');
     tent.setPosition(-56, heightAt(-56, -44), -44);
     tent.setEulerAngles(0, 40, 0);
     this.app.root.addChild(tent);
     const tL = primitive(this.app, 'TentL', 'box', this.tentCanvas, new pc.Vec3(-0.9, 1.1, 0), new pc.Vec3(2.2, 0.12, 3.2), tent);
-    tL.setLocalEulerAngles(0, 0, 52);
+    tL.setLocalEulerAngles(0, 0, -52);
     const tR = primitive(this.app, 'TentR', 'box', this.tentCanvas, new pc.Vec3(0.9, 1.1, 0), new pc.Vec3(2.2, 0.12, 3.2), tent);
-    tR.setLocalEulerAngles(0, 0, -52);
+    tR.setLocalEulerAngles(0, 0, 52);
+
 
     // Toadstools
     const mushrooms: ReadonlyArray<readonly [number, number, number]> = [
