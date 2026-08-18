@@ -23,7 +23,8 @@ import { VillagerManager } from '../world/VillagerManager';
 import { BikeController } from '../vehicles/BikeController';
 import { CarController } from '../vehicles/CarController';
 import { RaftController } from '../vehicles/RaftController';
-import { VehicleSpawner, PAINT_COLORS } from '../vehicles/VehicleSpawner';
+import { RaftWake } from '../vehicles/RaftWake';
+import { VehicleSpawner } from '../vehicles/VehicleSpawner';
 import { bikeLeanDegrees, raftPose } from '../vehicles/vehicleFeel';
 import type { Hud } from '../ui/Hud';
 
@@ -189,6 +190,7 @@ export class GameApp {
     const bike = new BikeController({ x: 15, y: heightAt(15, 7), z: 7 }, collision);
     const car = new CarController({ x: 5, y: heightAt(5, 8), z: 8 }, collision);
     const raft = new RaftController({ x: 50, y: WATER_SURFACE_Y + 0.15, z: 59 }, water);
+    const raftWake = new RaftWake(app);
 
     this.hud.onSpawnVehicleCallback = (type, color) => {
       vehicleSpawner.spawn(type, color);
@@ -208,6 +210,7 @@ export class GameApp {
     let carWheelAngle = 0;
     let previousBikePosition = { ...bike.snapshot.position };
     let previousCarPosition = { ...car.snapshot.position };
+    const previousViewPosition = { x: player.snapshot.position.x, z: player.snapshot.position.z };
     let prevMode: PlayerMode = 'grounded';
     let simTime = 0;
 
@@ -462,16 +465,27 @@ export class GameApp {
       syncCarVisual();
 
       const raftState = raft.snapshot;
-      const raftMotion = raftPose(simTime, Math.min(1, Math.abs(raftState.speed) / raft.maxSpeed), raftState.steerInput);
+      const raftSpeedRatio = Math.min(1, Math.abs(raftState.speed) / raft.maxSpeed);
+      const raftMotion = raftPose(simTime, raftSpeedRatio, raftState.steerInput);
       runtime.raftEntity.setPosition(raftState.position.x, raftState.position.y + raftMotion.bob, raftState.position.z);
       runtime.raftEntity.setEulerAngles(raftMotion.pitch, (raftState.yaw * 180) / Math.PI, raftMotion.roll);
+      raftWake.update(raftState.position, raftState.yaw, raftSpeedRatio, simTime);
 
-      const moveMagnitude = Math.hypot(frame.moveX, frame.moveY);
+      const travelled = Math.hypot(
+        snap.position.x - previousViewPosition.x,
+        snap.position.z - previousViewPosition.z
+      );
+      const actualTravelSpeed = dt > 0 ? Math.min(12, travelled / dt) : 0;
+      previousViewPosition.x = snap.position.x;
+      previousViewPosition.z = snap.position.z;
+
       const currentSpeed = snap.mode === 'car'
         ? Math.abs(car.snapshot.speed)
         : snap.mode === 'bike'
         ? Math.abs(bike.snapshot.speed)
-        : (moveMagnitude * (snap.mode === 'swimming' ? 3.6 : (coffeeSpeedBoostTimer > 0 ? 8.2 : 6.0)));
+        : snap.mode === 'raft'
+        ? 0
+        : actualTravelSpeed;
 
       const viewSteer = snap.mode === 'bike'
         ? bike.snapshot.steerInput
@@ -482,7 +496,8 @@ export class GameApp {
       view.sync(snap.position, snap.yaw, currentSpeed, dt, snap.mode, viewSteer);
 
       villagers.update(simTime, snap.position);
-      updateCamera(snap.position, snap.yaw, snap.pitch, dt, snap.mode === 'car');
+      const vehicleCamera = snap.mode === 'car' || snap.mode === 'bike' || snap.mode === 'raft';
+      updateCamera(snap.position, snap.yaw, snap.pitch, dt, vehicleCamera);
 
       for (const discovery of DISCOVERIES) {
         if (discovered.has(discovery.id) || Math.hypot(snap.position.x - discovery.position.x, snap.position.z - discovery.position.z) > discovery.radius) continue;
