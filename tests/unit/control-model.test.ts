@@ -22,7 +22,10 @@ describe('simple third-person control model', () => {
     const camera = applyCameraLook({ yaw: 0.4, pitch: -18 }, 120, -40);
     expect(camera.yaw).not.toBeCloseTo(0.4, 6);
     expect(camera.pitch).not.toBeCloseTo(-18, 6);
-    expect(camera.pitch).toBeGreaterThanOrEqual(-55);
-    expect(camera.pitch).toBeLessThanOrEqual(20);
+  });
+
+  it('clamps camera pitch to the simple mobile viewing range', () => {
+    expect(applyCameraLook({ yaw: 0, pitch: -18 }, 0, 10000).pitch).toBe(-38);
+    expect(applyCameraLook({ yaw: 0, pitch: -18 }, 0, -10000).pitch).toBe(12);
   });
 });
