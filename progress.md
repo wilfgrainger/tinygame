@@ -5,112 +5,158 @@
 **Active quality branch:** `feat/v0.1-quality-20x`  
 **Active PR:** #4 — `feat: V0.1 20x quality pass`  
 **Quality design:** `docs/superpowers/specs/2026-08-18-v0.1-quality-20x-design.md`  
-**Last verified gameplay SHA:** `e8ce2e34225679b3385e276ddb7920e2785e5454`  
+**Quality plan:** `docs/superpowers/plans/2026-08-18-v0.1-quality-20x.md`  
+**Frozen code-verified gameplay candidate:** `c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75`  
+**Candidate CI:** GitHub Actions run #117 — **PASS**  
 **Last updated:** 2026-08-18 Europe/London
 
 ## Session handoff
 
 TinyWorld is a mobile-first browser/PWA game. `VISION.md` defines the product. `AGENTS.md` defines agent rules. This file records facts and remaining work only.
 
-The original V0.1 implementation foundation was merged to `main` as `80951318`. A separate quality-only branch and draft PR #4 now implement the **20x quality pass**. This pass is feature-frozen: improve feel, composition, camera, movement, vehicle physicality, atmosphere and mobile performance; do not expand into new feature families.
+The V0.1 foundation was merged to `main` as `80951318`. PR #4 is a quality-only pass built from that foundation. The code-owned 20x pass is now frozen at `c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75`; later documentation-only commits do **not** change the gameplay candidate unless this file explicitly names a new code SHA.
 
-### Latest owner evidence
+The 20x branch remains feature-frozen. Do not add new feature families before Android/family acceptance.
 
-On 2026-08-18 the owner supplied a real Android browser screen recording showing a clear control problem:
+## Owner evidence that triggered Priority 0
 
-- the avatar body did not face actual travel direction;
-- movement therefore read as sideways/backwards sliding;
-- camera heading and avatar heading felt coupled;
-- camera orbit/view control did not feel natural;
-- the recording was portrait, while landscape remains the primary V0.1 acceptance orientation.
+On 2026-08-18 the owner supplied a real Android browser recording showing:
 
-This evidence moved **controls/camera to Priority 0** ahead of visual-world polish.
+- avatar body facing did not match actual travel;
+- movement read as sideways/backwards sliding;
+- camera heading and avatar heading were coupled;
+- right-side camera/view control did not feel natural;
+- the recording was portrait, while landscape remains the formal V0.1 acceptance orientation.
 
-### Priority 0 control fix now implemented
+That defect is addressed in code but still requires real-device feel acceptance.
 
-Verified gameplay candidate: `e8ce2e34225679b3385e276ddb7920e2785e5454`.
+## 20x code-owned work completed
 
-Changes:
+### Controls and movement
 
-1. Added `src/game/player/controlModel.ts` as the small pure control-math boundary.
-2. Left-stick movement is explicitly camera-relative.
-3. Right-side drag changes camera/movement heading and pitch, not the avatar's visual body facing.
-4. Avatar visual facing is derived from actual world displacement and turns toward travel direction.
-5. Standing still preserves avatar facing while the camera can orbit independently.
-6. Camera pitch range is deliberately narrower to avoid extreme ground/sky views.
-7. Vehicles retain their own direct heading/facing behaviour.
+- Left stick is camera-relative.
+- Avatar visual facing follows actual world travel, not camera yaw.
+- Right drag changes camera yaw/pitch independently of avatar body facing.
+- Standing still preserves avatar facing while the camera can orbit.
+- Camera pitch is constrained to a simple mobile range (`-38°..12°`).
+- 12% radial joystick deadzone removes small thumb/input drift.
+- On-foot movement uses fast acceleration and faster release/deceleration.
+- Walking/swimming animation speed now follows actual travel distance, not raw stick noise.
+- Touch focus-loss / pointer-cancel / visibility protections remain in place.
 
-TDD evidence:
+### Camera
 
-- RED commit: `04c31a2d1e9348b739af986848da83c9d48c17fb` defined the new control contract before implementation.
-- GREEN candidate: `e8ce2e34225679b3385e276ddb7920e2785e5454`.
-- GitHub Actions CI run #93: **PASS** on that exact SHA.
-- The full source/type/test/build/browser gate passed.
+- Camera target math is isolated in `src/game/player/cameraRig.ts`.
+- Follow damping is frame-rate independent.
+- Camera vectors are reused rather than allocated every frame.
+- Bike, raft and car use the wider vehicle camera framing.
+- Portrait remains mechanically supported; landscape remains primary acceptance.
 
-The control rewrite is **code-verified but not yet human-feel accepted**. It must be deployed and played on the real phone before it can be called fixed.
+### Tiny Bike
 
-## Canonical current product rules
+- Progressive steering based on speed.
+- Existing stricter terrain/slope limits preserved.
+- Wheels still rotate from actual distance travelled.
+- Visible speed-dependent bike lean added.
+- Avatar receives bike steering feedback for riding pose.
 
-- Product identity is **TinyWorld**, not another game's clone or named style.
-- Android landscape is the primary V0.1 acceptance target; portrait should remain mechanically correct.
-- Place before systems; dense/authored beats large/sparse.
-- Left stick moves relative to camera.
-- Moving avatar faces actual travel direction; no default strafe/backpedal presentation.
-- Right drag orbits/tilts camera independently of avatar facing.
-- Jump + one contextual Action button remain the simple core controls.
-- Roads/paths follow terrain.
-- Walking, bike and car have meaningful step/slope traversal limits.
-- Home only promises persistence that actually exists. The lamp state is persistent; fake house ownership/lock semantics are not V0.1 product promises.
-- Cloudflare Free-plan architecture only.
-- Persistent state is server-authoritative.
-- Real Android and family acceptance override green CI.
+### Tiny Raft
 
-## Implemented foundation already on `main`
+- Progressive speed-aware steering.
+- Bounded low-frequency bob, roll and pitch.
+- Lightweight reusable wake/ripple presentation.
+- Existing water bounds, mount/dismount and recovery lifecycle preserved.
+- Avatar no longer performs a walking animation while steering the raft.
 
-- TypeScript + Vite + standalone PlayCanvas Engine.
-- Cloudflare Worker + D1 persistence architecture.
-- Google sign-in/session foundation.
-- PWA shell and release metadata/build stamp.
-- Village Square, Home Lane, Woodland, Mountain Rise and Harbour.
-- Terrain-following roads and non-flat heightfield.
-- Walking step/slope constraints plus stricter bike/car traversal limits.
-- Swimming and safe recovery.
-- Direct-control Tiny Bike and Tiny Raft.
-- Enterable home with a genuinely persisted lamp interaction.
-- Existing town/NPC/roleplay texture may remain where useful but is non-core V0.1 texture.
-- Touch phantom-input protections on pointer release/cancel, focus loss and visibility loss.
-- Locked npm dependencies and storage-frugal public-repository CI.
+### World composition
 
-## 20x quality pass status
+A non-colliding `QualityScenery` presentation layer now adds deterministic authored composition without changing gameplay routes or persistence:
 
-| Area | Status | Next evidence/action |
+- **Woodland:** threshold/arch framing, layered edge vegetation, grove framing and lighting punctuation.
+- **Mountain Rise:** lower approach framing, upper-route rocks/posts and a summit cairn/lookout composition.
+- **Harbour:** arrival scene, lantern/mooring posts, raft mooring framing and softened shoreline detail.
+- **Home Lane:** front-garden clusters, warm lantern/bench/tree punctuation and home-boundary detail.
+
+The goal is stronger visual sentences and landmarks, not uniform prop scattering.
+
+### Mobile performance hardening
+
+- Main directional shadow map reduced from 2048 to 1024.
+- Smoke and fountain effects use fixed reusable pools rather than routine entity create/destroy churn.
+- Smoke/fountain spawn cadence is time-based rather than frame-probability-based.
+- Camera update avoids per-frame `pc.Vec3` allocation.
+- No new backend, network loop, asset pack or physics dependency was introduced.
+
+### Product-contract cleanup
+
+- Home interaction now says **Welcome Home**, not Claim/Lock House.
+- V0.1 still promises only persistence that actually exists; lamp state is the real home persistence example.
+- TinyWorld terminology remains original; other games are not durable product/style contracts.
+
+## Verification evidence
+
+TDD checkpoints intentionally went RED before implementation for controls, movement/camera, vehicle feel, authored composition and particle pooling.
+
+Final gameplay candidate:
+
+`c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75`
+
+GitHub Actions run #117 passed the exact candidate:
+
+- dependency install: PASS
+- local D1 migration: PASS
+- TypeScript typecheck: PASS
+- source guards: PASS
+- unit + Worker tests: PASS
+- production build: PASS
+- distribution budget: PASS
+- Playwright Chromium install: PASS
+- desktop browser tests: PASS
+- Android-landscape browser tests: PASS
+
+CI uses read-only permissions and uploads no Actions artifacts/packages.
+
+## Current status
+
+| Area | Status | Remaining evidence/action |
 |---|---|---|
-| Controls / avatar facing | CODE GREEN | Deploy `e8ce2e34` or later exact candidate and replay on Android. |
-| Camera orbit / pitch | CODE GREEN, HUMAN TEST REQUIRED | Verify right-drag orbit feels natural and no extreme view traps occur. |
-| World composition | PENDING | Improve authored density and silhouettes after controls are accepted. |
-| Woodland | PENDING | Denser layered edges, clear paths/openings, no uniform tree scattering. |
-| Mountain | FOUNDATION READY | Preserve intended traversable route; improve summit payoff/composition. |
-| Home Lane / home warmth | PENDING | Improve domestic composition without adding new persistence domains. |
-| Harbour / raft presentation | PENDING | Improve waterfront composition and lightweight raft feedback. |
-| Tiny Bike feel | FOUNDATION READY | Progressive feedback/lean/feel pass after core controls. |
-| NPC/living-world polish | PENDING | Improve presentation cheaply; no feature expansion. |
-| Mobile performance | MEASURE ON DEVICE | Target sustained >=30 FPS on acceptance Android. |
-| Android acceptance | NOT RUN ON QUALITY CANDIDATE | Must use exact deployed candidate SHA. |
-| Family acceptance | NOT RUN ON QUALITY CANDIDATE | Three independently enjoyed activities + explicit PASS/FAIL. |
+| Simple mobile control model | CODE PASS | Real Android feel test. |
+| Avatar facing | CODE PASS | Confirm no sideways/backwards sliding on device. |
+| Camera orbit / pitch | CODE PASS | Confirm right-drag feels natural on device. |
+| Joystick deadzone / release | CODE PASS | Confirm no drift or floatiness on device. |
+| World composition | CODE PASS | Human visual judgement required. |
+| Woodland authored density | CODE PASS | Family/device visual judgement required. |
+| Mountain route + summit | CODE PASS | Confirm route remains clear and payoff feels worthwhile. |
+| Home Lane warmth | CODE PASS | Human visual judgement required. |
+| Harbour / raft presentation | CODE PASS | Human visual/feel judgement required. |
+| Tiny Bike feel | CODE PASS | Human riding feel test required. |
+| Tiny Raft feel | CODE PASS | Human steering feel test required. |
+| Ambient allocation/perf hardening | CODE PASS | Measure real Android FPS/thermal behaviour. |
+| Cloudflare DEV deployment of candidate | **NOT DONE** | Deploy exact `c3286c7d...`; verify `/release.json` and visible stamp. |
+| Android acceptance | **NOT RUN** | Run exact deployed candidate. |
+| Family acceptance | **NOT RUN** | Three independently enjoyed activities + explicit PASS/FAIL. |
 
 ## DEV / deployment state
 
-A Cloudflare DEV environment has previously been provisioned. **Do not assume it contains the latest quality branch.** Before human testing, deploy the exact intended candidate and confirm `/release.json` / visible build stamp match the SHA under test.
+Cloudflare DEV is provisioned at:
 
-Do not let an older DEV deployment certify a newer branch.
+`https://tinygame-dev.zerobytemode.workers.dev`
 
-## Owner-only actions still expected
+**Do not assume that URL contains `c3286c7d`.** This chat has no Cloudflare connector or authenticated Cloudflare deployment surface, and the repository currently has no default-branch deploy workflow. The latest quality candidate has therefore **not been claimed as deployed**.
 
-1. After the quality candidate is deployed, test left-stick movement and right-drag camera on the real Android phone.
-2. Prefer landscape for the formal acceptance route; also sanity-check portrait because the supplied failure recording was portrait.
-3. Record whether the avatar always turns into its travel direction and whether camera orbit remains independent while standing still.
-4. Later, run the full Android acceptance route on the final exact candidate.
-5. Run the uninstructed family playtest and record three independently enjoyed activities plus explicit PASS/FAIL.
+Before human testing:
+
+1. deploy exact gameplay candidate `c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75` from an authenticated Cloudflare/Wrangler environment;
+2. confirm `/release.json` reports the candidate SHA;
+3. confirm the visible in-game build stamp matches;
+4. only then record Android/family evidence.
+
+## Owner-only actions still required
+
+1. **Deploy the frozen candidate to Cloudflare DEV.**
+2. **Android control check:** left-stick movement, avatar facing and right-drag camera in landscape; also sanity-check portrait because the original failure recording was portrait.
+3. **10-minute Android route/performance check:** target sustained >=30 FPS with no serious hitching/thermal issue.
+4. **Family playtest:** uninstructed session with at least three independently chosen/enjoyed activities and an explicit PASS/FAIL.
 
 ## Completion rule
 
