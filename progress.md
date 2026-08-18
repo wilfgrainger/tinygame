@@ -4,7 +4,7 @@
 **Implementation PR:** #2  
 **Implementation branch:** `feat/v0.1-mobile-pwa`  
 **Plan:** `docs/superpowers/plans/2026-08-17-tinyworld-web-v0.1.md`  
-**Last updated:** 2026-08-18 12:18 Europe/London
+**Last updated:** 2026-08-18 12:20 Europe/London
 
 ## Session handoff
 
@@ -15,6 +15,8 @@ The code-owned V0.1 vertical slice with the mobile-first Brookhaven open-town ro
 - **Current Candidate SHA**: `937a11866f1c4e650ea9591461ff7d7045ce56b7`
 - **PR**: PR #2 (`feat/v0.1-mobile-pwa` -> `main`)
 - **Live DEV Endpoint**: `https://tinygame-dev.zerobytemode.workers.dev`
+- **Current Plan**: Major Brookhaven-grade open-town overhaul with lush gardens/woods/rocks/hills, animated NPC villagers with jobs, house claiming, job roles, vehicle spawner, emotes, and procedural music.
+
 
 
 
