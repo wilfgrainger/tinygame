@@ -1,7 +1,8 @@
 export type CameraPoint = { x: number; y: number; z: number };
 export type CameraTarget = { position: CameraPoint; lookAt: CameraPoint };
 
-export function cameraTarget(
+export function cameraTargetInto(
+  out: CameraTarget,
   player: CameraPoint,
   yaw: number,
   pitchDegrees: number,
@@ -15,14 +16,30 @@ export function cameraTarget(
   const pitch = (pitchDegrees * Math.PI) / 180;
   const horizontalDistance = Math.cos(pitch) * distance;
 
-  return {
-    position: {
-      x: player.x - Math.sin(yaw) * horizontalDistance,
-      y: player.y + heightOffset - Math.sin(pitch) * distance * 0.45,
-      z: player.z + Math.cos(yaw) * horizontalDistance
-    },
-    lookAt: { x: player.x, y: player.y + lookHeight, z: player.z }
-  };
+  out.position.x = player.x - Math.sin(yaw) * horizontalDistance;
+  out.position.y = player.y + heightOffset - Math.sin(pitch) * distance * 0.45;
+  out.position.z = player.z + Math.cos(yaw) * horizontalDistance;
+  out.lookAt.x = player.x;
+  out.lookAt.y = player.y + lookHeight;
+  out.lookAt.z = player.z;
+  return out;
+}
+
+export function cameraTarget(
+  player: CameraPoint,
+  yaw: number,
+  pitchDegrees: number,
+  aspect: number,
+  inVehicle = false
+): CameraTarget {
+  return cameraTargetInto(
+    { position: { x: 0, y: 0, z: 0 }, lookAt: { x: 0, y: 0, z: 0 } },
+    player,
+    yaw,
+    pitchDegrees,
+    aspect,
+    inVehicle
+  );
 }
 
 export function followAlpha(dt: number, responsiveness = 12): number {
