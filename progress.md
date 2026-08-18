@@ -1,90 +1,168 @@
 # TinyWorld Web V0.1 Progress
 
-**Controlling issue:** #1  
-**Implementation PR:** #2  
-**Implementation branch:** `feat/v0.1-mobile-pwa`  
-**Plan:** `docs/superpowers/plans/2026-08-17-tinyworld-web-v0.1.md`  
-**Last updated:** 2026-08-18 12:37 Europe/London
+**Repository:** `wilfgrainger/tinygame`  
+**Main foundation merge:** `80951318b35f4130bf03eb653d137085ffa44542`  
+**Active quality branch:** `feat/v0.1-quality-20x`  
+**Active PR:** #4 — `feat: V0.1 20x quality pass`  
+**Quality design:** `docs/superpowers/specs/2026-08-18-v0.1-quality-20x-design.md`  
+**Quality plan:** `docs/superpowers/plans/2026-08-18-v0.1-quality-20x.md`  
+**Frozen code-verified gameplay candidate:** `c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75`  
+**Candidate CI:** GitHub Actions run #117 — **PASS**  
+**Last updated:** 2026-08-18 Europe/London
 
 ## Session handoff
 
-TinyWorld is being rebuilt as a mobile-first browser/PWA game in `wilfgrainger/tinygame`. The Roblox repository is historical only. This file is the durable cross-session handoff: every implementation session must read it first and update it before finishing.
+TinyWorld is a mobile-first browser/PWA game. `VISION.md` defines the product. `AGENTS.md` defines agent rules. This file records facts and remaining work only.
 
-The code-owned V0.1 vertical slice with the Brookhaven open-town roleplay overhaul (NPC villagers, house claiming, vehicle spawner, job roles, emotes, procedural town music, lush gardens/cherry blossoms/rocks), forward character mesh orientation, and verified mobile touch controls is on PR #2 (`ff5c13f`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured.
+The V0.1 foundation was merged to `main` as `80951318`. PR #4 is a quality-only pass built from that foundation. The code-owned 20x pass is now frozen at `c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75`; later documentation-only commits do **not** change the gameplay candidate unless this file explicitly names a new code SHA.
 
-- **Current Candidate SHA**: `ff5c13f97232` (phantom joystick fix)
-- **Previous SHAs**: `a16fc72` (Brookhaven overhaul), `937a118` (forward-facing fix)
-- **PR**: PR #2 (`feat/v0.1-mobile-pwa` -> `main`)
-- **Live DEV Endpoint**: `https://tinygame-dev.zerobytemode.workers.dev`
-- **Current Status**: Brookhaven overhaul deployed + phantom joystick input bug fixed. Awaiting user test confirmation on mobile.
+The 20x branch remains feature-frozen. Do not add new feature families before Android/family acceptance.
 
-## Work Completed
-1. **Zero-Byte Procedural Web Audio Engine**: Synthesizes footsteps across grass/asphalt/wood/stone, bicycle bells, water swimming/splash, jumps, landing impacts, discovery fanfares, espresso steam, cash register barcode scanner, car horns, doorbells, light switches, water hose spray, food crunch, cheer fanfare, door lock, and **looping procedural town background music** (C Major / A Minor chord progressions with melodic chime plucks).
-2. **Atmospheric Environment & Shaders**: Linear depth fog, procedural moving cumulus clouds, chimney smoke particles, fountain droplets, and floating interaction markers.
-3. **Procedural Explorer Character Model**: Anatomical proportions, walking/running gait with dynamic head/torso sway, turn banking, landing squash, pedaling on bike, car driving pose, hand props posture, swimming breaststroke crawl, **role uniforms** (Firefighter, Police, Barista), and **animated emotes** (Wave, Dance, Cheer, Sit).
-4. **Brookhaven-Style Open Town & Roleplay Infrastructure**:
-   - Paved asphalt roads with dashed white centerlines, curbs, sidewalks, and crosswalks.
-   - Town Square with 4-faced Clock Tower and central Tiered Fountain.
-   - **Park Gardens**: Tiered flowerbeds with red/yellow/white tulips, pink flowering cherry blossom trees.
-   - **Vehicle Spawn Terminal**: Glowing terminal in town square where players can spawn custom-painted cars/bikes.
-   - Enterable Town Cafe ("Bean & Berry") with espresso counter (*"brew coffee"* trigger), pastry case, and dining tables.
-   - Enterable Supermarket ("Fresh Mart") with grocery aisles, produce crates (apples/oranges), and checkout register (*"barcode scanner"* trigger).
-   - Enterable Town Hall & Police Station with mayor's podium (*"speech"* trigger).
-   - Suburban Estate with driveway, mailbox, doorbell (*"ding-dong"*), living room sofa, kitchen fridge (*"grab ice cream"*), and bedroom with server-synced lamp.
-   - **House Claiming**: Players can claim a house, lock/unlock front door.
-5. **Animated NPC Villagers with Jobs**:
-   - **Barista Bruno**: Apron, milk pitcher, stir/froth animation at cafe counter.
-   - **Shopkeeper Sarah**: Market apron, barcode scanner swipe at register.
-   - **Mayor Sterling**: Formal suit, gold sash, speech gesticulations at podium.
-   - **Gardener Gary**: Straw hat, overalls, watering can pour at park flowerbed.
-   - **Officer Ollie**: Navy uniform, police cap, flashlight patrol on Main St.
-   - Head tracking towards player when within 6m, floating speech bubbles with role-themed dialogue when within 3.5m.
-6. **Roleplay Handheld Props & Vehicles**:
-   - Quick Props Drawer in HUD: Coffee mug, Strawberry Ice Cream cone, Flashlight (with real-time forward spotlight cone), buoyant Red Balloon, and Fire Hose (keys `1`-`5`, `0`).
-   - **Use Prop button**: Sip coffee (6s speed boost!), eat ice cream, spray water hose.
-   - Drivable 4-wheeled convertible mini-car with throttle, reverse, steering wheel turning, spinning wheels, and horn button (key `H`).
-   - **Vehicle Spawner Dock**: Spawn Red/Blue/Yellow cars or Bikes from HUD menu.
-   - Town cruiser bicycle and harbour raft.
-7. **Glassmorphism HUD & Notifications**: Top bar pills (Items, Jobs, Emotes, Vehicle, Music, Keys), modal dock drawers, virtual joystick, dynamic context-sensitive action button, horn button, celebratory discovery banners, NPC speech bubbles, and save state indicator.
-8. **Phantom Joystick Fix (`ff5c13f`)**: Added `pointerleave`, global `pointerup`/`pointercancel`, and `visibilitychange` safety nets to TouchInput; added blur/visibility listeners and `wasMoving` flag to KeyboardInput to prevent stuck movement input.
-9. **CI & Verification**: 28/28 unit and worker tests passing, 13/13 Playwright browser tests passing, locked dependencies, zero GitHub Actions artifact storage quota usage.
+## Owner evidence that triggered Priority 0
 
-## Constraints
+On 2026-08-18 the owner supplied a real Android browser recording showing:
 
-- Cloudflare Free plan only: Workers Static Assets + Worker + D1.
-- Android phone landscape is the V0.1 acceptance platform; desktop web is secondary.
-- Google sign-in only for V0.1.
-- No R2, Durable Objects, multiplayer, chat, trading, co-op, missions framework, paid mechanics, portals, pets, combat, Apple auth, or Android gameplay fork.
-- Persistent value/state is server-authoritative; no per-frame API traffic.
-- Real Android and family acceptance are release-blocking.
-- `tinygame` is public, so standard GitHub-hosted Actions compute is free. CI uses 0 bytes of GitHub storage (no artifact uploads, read-only permissions).
+- avatar body facing did not match actual travel;
+- movement read as sideways/backwards sliding;
+- camera heading and avatar heading were coupled;
+- right-side camera/view control did not feel natural;
+- the recording was portrait, while landscape remains the formal V0.1 acceptance orientation.
 
-## Status
+That defect is addressed in code but still requires real-device feel acceptance.
 
-| Task | Status | Evidence / next action |
+## 20x code-owned work completed
+
+### Controls and movement
+
+- Left stick is camera-relative.
+- Avatar visual facing follows actual world travel, not camera yaw.
+- Right drag changes camera yaw/pitch independently of avatar body facing.
+- Standing still preserves avatar facing while the camera can orbit.
+- Camera pitch is constrained to a simple mobile range (`-38°..12°`).
+- 12% radial joystick deadzone removes small thumb/input drift.
+- On-foot movement uses fast acceleration and faster release/deceleration.
+- Walking/swimming animation speed now follows actual travel distance, not raw stick noise.
+- Touch focus-loss / pointer-cancel / visibility protections remain in place.
+
+### Camera
+
+- Camera target math is isolated in `src/game/player/cameraRig.ts`.
+- Follow damping is frame-rate independent.
+- Camera vectors are reused rather than allocated every frame.
+- Bike, raft and car use the wider vehicle camera framing.
+- Portrait remains mechanically supported; landscape remains primary acceptance.
+
+### Tiny Bike
+
+- Progressive steering based on speed.
+- Existing stricter terrain/slope limits preserved.
+- Wheels still rotate from actual distance travelled.
+- Visible speed-dependent bike lean added.
+- Avatar receives bike steering feedback for riding pose.
+
+### Tiny Raft
+
+- Progressive speed-aware steering.
+- Bounded low-frequency bob, roll and pitch.
+- Lightweight reusable wake/ripple presentation.
+- Existing water bounds, mount/dismount and recovery lifecycle preserved.
+- Avatar no longer performs a walking animation while steering the raft.
+
+### World composition
+
+A non-colliding `QualityScenery` presentation layer now adds deterministic authored composition without changing gameplay routes or persistence:
+
+- **Woodland:** threshold/arch framing, layered edge vegetation, grove framing and lighting punctuation.
+- **Mountain Rise:** lower approach framing, upper-route rocks/posts and a summit cairn/lookout composition.
+- **Harbour:** arrival scene, lantern/mooring posts, raft mooring framing and softened shoreline detail.
+- **Home Lane:** front-garden clusters, warm lantern/bench/tree punctuation and home-boundary detail.
+
+The goal is stronger visual sentences and landmarks, not uniform prop scattering.
+
+### Mobile performance hardening
+
+- Main directional shadow map reduced from 2048 to 1024.
+- Smoke and fountain effects use fixed reusable pools rather than routine entity create/destroy churn.
+- Smoke/fountain spawn cadence is time-based rather than frame-probability-based.
+- Camera update avoids per-frame `pc.Vec3` allocation.
+- No new backend, network loop, asset pack or physics dependency was introduced.
+
+### Product-contract cleanup
+
+- Home interaction now says **Welcome Home**, not Claim/Lock House.
+- V0.1 still promises only persistence that actually exists; lamp state is the real home persistence example.
+- TinyWorld terminology remains original; other games are not durable product/style contracts.
+
+## Verification evidence
+
+TDD checkpoints intentionally went RED before implementation for controls, movement/camera, vehicle feel, authored composition and particle pooling.
+
+Final gameplay candidate:
+
+`c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75`
+
+GitHub Actions run #117 passed the exact candidate:
+
+- dependency install: PASS
+- local D1 migration: PASS
+- TypeScript typecheck: PASS
+- source guards: PASS
+- unit + Worker tests: PASS
+- production build: PASS
+- distribution budget: PASS
+- Playwright Chromium install: PASS
+- desktop browser tests: PASS
+- Android-landscape browser tests: PASS
+
+CI uses read-only permissions and uploads no Actions artifacts/packages.
+
+## Current status
+
+| Area | Status | Remaining evidence/action |
 |---|---|---|
-| 1. Repo/build/release guards | PASS | package-lock.json committed, read-only CI active, source/dist guards verified. |
-| 2. Worker + D1 foundation | DEV PROVISIONED | `tinygame-dev` D1 database (4cea2e7a-7d30-47c4-991f-8cd50a6a9fea) created, `wrangler.dev.jsonc` configured, remote migration `0001_v0_1_core.sql` applied. |
-| 3. Google auth + sessions | DEV CONFIGURED | `GOOGLE_CLIENT_ID`, `ALLOWED_ORIGIN`, `SESSION_PEPPER`, and `AUTH_RATE_LIMIT_SALT` secrets set on `tinygame-dev`. |
-| 4. Profile/discovery/home persistence | VERIFIED | strict Zod contracts and prepared D1 persistence tested (28/28 unit/worker tests pass). |
-| 5. Browser shell + PlayCanvas bootstrap | VERIFIED | one PlayCanvas app, Google UX/API client, build stamp and restrictive headers implemented. |
-| 6. Touch/desktop input + movement | VERIFIED | pointer touch controls w/ phantom joystick safety nets, keyboard/mouse, kinematic movement/collision and procedural Explorer player. |
-| 7. Authored town world + atmosphere | VERIFIED | five-zone vertex-blended terrain, paved roads, clock tower, enterable cafe, supermarket, town hall, suburban estate, cherry blossoms, park gardens, fog, clouds, and particles. |
-| 8. Home + roleplay + audio | VERIFIED | enterable home, doorbell chime, espresso machine, grocery register, mayor podium, sofa/wardrobe/lamp interactions, Web Audio synth, persistent discoveries, background town music. |
-| 9. NPC Villagers | VERIFIED | 5 animated villagers (Bruno, Sarah, Sterling, Gary, Ollie) with work animations, head tracking, and proximity speech bubbles. |
-| 10. Swimming | VERIFIED | bounded water/swim state with prone crawl animation and recovery logic implemented. |
-| 11. Town Mini-Car & Cruiser Bike | VERIFIED | direct-control mini-car with steering front wheels, spinning tires, horn audio, cruiser bicycle, vehicle spawner dock. |
-| 12. Handheld Roleplay Props | VERIFIED | HUD pill drawer with coffee mug, ice cream cone, spotlight flashlight, buoyant party balloon, fire hose; Use Prop actions (sip/eat/spray). |
-| 13. Job Roles & Emotes | VERIFIED | Explorer/Barista/Firefighter/Police role uniforms, Wave/Dance/Cheer/Sit emotes. |
-| 14. House Claiming | VERIFIED | Claim house, lock/unlock door via mailbox interaction. |
-| 15. PWA + DEV + Android/family acceptance | DEV DEPLOYED / AWAITING EVIDENCE | DEV live at `https://tinygame-dev.zerobytemode.workers.dev`. Real Android route and family playtest pending. |
+| Simple mobile control model | CODE PASS | Real Android feel test. |
+| Avatar facing | CODE PASS | Confirm no sideways/backwards sliding on device. |
+| Camera orbit / pitch | CODE PASS | Confirm right-drag feels natural on device. |
+| Joystick deadzone / release | CODE PASS | Confirm no drift or floatiness on device. |
+| World composition | CODE PASS | Human visual judgement required. |
+| Woodland authored density | CODE PASS | Family/device visual judgement required. |
+| Mountain route + summit | CODE PASS | Confirm route remains clear and payoff feels worthwhile. |
+| Home Lane warmth | CODE PASS | Human visual judgement required. |
+| Harbour / raft presentation | CODE PASS | Human visual/feel judgement required. |
+| Tiny Bike feel | CODE PASS | Human riding feel test required. |
+| Tiny Raft feel | CODE PASS | Human steering feel test required. |
+| Ambient allocation/perf hardening | CODE PASS | Measure real Android FPS/thermal behaviour. |
+| Cloudflare DEV deployment of candidate | **NOT DONE** | Deploy exact `c3286c7d...`; verify `/release.json` and visible stamp. |
+| Android acceptance | **NOT RUN** | Run exact deployed candidate. |
+| Family acceptance | **NOT RUN** | Three independently enjoyed activities + explicit PASS/FAIL. |
 
+## DEV / deployment state
 
-## Owner-only inputs / actions still expected
+Cloudflare DEV is provisioned at:
 
-1. **Android Acceptance**: Run the acceptance route on a real Android phone (Chrome landscape) and record evidence in `docs/quality/v0.1-android-acceptance.md`.
-2. **Family Acceptance**: Uninstructed family play session recording three independently enjoyed activities plus explicit family PASS/FAIL.
+`https://tinygame-dev.zerobytemode.workers.dev`
+
+**Do not assume that URL contains `c3286c7d`.** This chat has no Cloudflare connector or authenticated Cloudflare deployment surface, and the repository currently has no default-branch deploy workflow. The latest quality candidate has therefore **not been claimed as deployed**.
+
+Before human testing:
+
+1. deploy exact gameplay candidate `c3286c7d438d8ac0a79e5f8db9bbc22a8da59f75` from an authenticated Cloudflare/Wrangler environment;
+2. confirm `/release.json` reports the candidate SHA;
+3. confirm the visible in-game build stamp matches;
+4. only then record Android/family evidence.
+
+## Owner-only actions still required
+
+1. **Deploy the frozen candidate to Cloudflare DEV.**
+2. **Android control check:** left-stick movement, avatar facing and right-drag camera in landscape; also sanity-check portrait because the original failure recording was portrait.
+3. **10-minute Android route/performance check:** target sustained >=30 FPS with no serious hitching/thermal issue.
+4. **Family playtest:** uninstructed session with at least three independently chosen/enjoyed activities and an explicit PASS/FAIL.
 
 ## Completion rule
 
-Do not mark V0.1 accepted until the exact candidate records both `ANDROID ACCEPTANCE: PASS` and `FAMILY ACCEPTANCE: PASS`. Missing external credentials/device evidence is `NOT RUN`, never an invented PASS.
+Do not mark V0.1 or the 20x pass accepted until the exact deployed candidate records both:
+
+- `ANDROID ACCEPTANCE: PASS`
+- `FAMILY ACCEPTANCE: PASS`
+
+A green CI run proves engineering checks. It does not prove that controls feel good, the world looks finished, or the game is fun.

@@ -1,130 +1,104 @@
-# TinyWorld Web
+# TinyWorld
 
-TinyWorld is a mobile-first browser-native 3D game and installable Android PWA.
+**Build your life. Explore impossible worlds. Discover the secrets of TinyWorld.**
 
-> **Build your life. Explore impossible worlds. Discover the secrets of TinyWorld.**
-
-For V0.1, the target is deliberately smaller: open the game on a phone and immediately enjoy being in a compact, authored world with satisfying movement, exploration, swimming, a real Tiny Bike, Tiny Raft and a small persistent home interaction.
+TinyWorld is a mobile-first browser/PWA game built with TypeScript, Vite, PlayCanvas Engine and Cloudflare. The immediate goal is a small, authored V0.1 world that feels good to move through on a real Android phone before the project expands into deeper systems.
 
 ## Start here
 
-- [VISION.md](VISION.md) — product promise, design DNA, V0.1 quality bar and long-term direction.
-- [progress.md](progress.md) — current branch/candidate state, blockers and exact next actions.
-- [ARCHITECTURE.md](ARCHITECTURE.md) — implemented technical architecture and engineering invariants.
-- [AGENTS.md](AGENTS.md) — hard rules for Codex/agent sessions.
-- [V0.1 acceptance](docs/quality/v0.1-android-acceptance.md) — exact-build Android and family release evidence.
+Read these in order before changing the game:
 
-## V0.1 core
+1. [`VISION.md`](VISION.md) — product promise, pillars, scope and quality bar.
+2. [`AGENTS.md`](AGENTS.md) — hard engineering/agent rules.
+3. [`progress.md`](progress.md) — factual current handoff, frozen candidate and remaining work.
+4. [`ARCHITECTURE.md`](ARCHITECTURE.md) — implemented technical architecture and invariants.
+5. [`docs/superpowers/specs/2026-08-18-v0.1-quality-20x-design.md`](docs/superpowers/specs/2026-08-18-v0.1-quality-20x-design.md) — active quality-pass design.
+6. [`docs/superpowers/plans/2026-08-18-v0.1-quality-20x.md`](docs/superpowers/plans/2026-08-18-v0.1-quality-20x.md) — executed quality plan and open human gates.
+7. [`docs/quality/v0.1-android-acceptance.md`](docs/quality/v0.1-android-acceptance.md) — exact-build Android/family acceptance record.
 
-Release-critical:
+`progress.md` is the cross-session source of truth for what is actually done. Do not infer current status from an older commit message or historical plan checkbox.
 
-- Android-first landscape touch controls;
-- compact authored Village Square, Home Lane, Woodland, Mountain Rise and Harbour;
-- meaningful terrain and routes;
-- third-person movement, jump and camera control;
-- swimming and safe shore recovery;
-- direct-control Tiny Bike;
-- direct-control Tiny Raft;
-- player home with one small server-persisted interaction;
+## Current V0.1 shape
+
+The release-critical experience is deliberately compact:
+
 - Google sign-in;
-- Cloudflare D1 persistence;
+- Village Square, Home Lane, Woodland, Mountain Rise and Harbour;
+- camera-relative mobile movement and independent right-drag camera;
+- avatar facing driven by actual travel direction;
+- jumping, swimming and safe recovery;
+- direct-control Tiny Bike and Tiny Raft;
+- enterable home with one genuinely persistent lamp interaction;
+- discoveries and server-authoritative persistence;
 - installable PWA;
-- visible build/release identity;
-- real Android + family acceptance.
+- Android landscape as the primary acceptance target.
 
-The branch also contains extra roleplay texture including NPCs, shops, props, emotes, roles, music and a mini-car. These are **non-core V0.1 extras**. The repo is feature-frozen until core acceptance passes.
+Existing NPCs, shops, props, roles, emotes and the mini-car are non-core roleplay texture. They are **feature-frozen** until V0.1 passes Android and family acceptance.
 
-## Stack
+## Active 20x quality candidate
 
-- TypeScript + Vite
-- standalone PlayCanvas Engine
-- Cloudflare Workers Static Assets + Worker + D1
-- Google Identity Services
-- Vitest + Playwright
-- one web/PWA client; no Android gameplay fork
-- no R2 or Durable Objects in V0.1
+The code-owned quality pass is frozen at the gameplay SHA recorded in [`progress.md`](progress.md). It improves controls, movement response, camera damping, bike/raft physicality, outer-zone composition and mobile rendering discipline without adding a new feature family.
+
+Do not call the candidate released merely because CI is green. The exact gameplay build must be deployed to Cloudflare DEV, identified by `/release.json` + visible build stamp, then pass real Android and family playtests.
 
 ## Local development
 
-Node 24 is required.
+Requirements:
+
+- Node version from `.nvmrc`;
+- npm;
+- Wrangler via project dependencies.
+
+Install and verify:
+
+```bash
+npm ci
+npm run typecheck
+npm test
+npm run build
+```
+
+Run the complete local game + Worker/D1 path:
 
 ```bash
 cp .env.example .env.local
 cp .dev.vars.example .dev.vars
-npm ci
 npm run dev
 ```
 
-Put the same public Google Web client ID in `.env.local` and `.dev.vars`. Replace local pepper/salt placeholders with separate long random values.
+The local launcher applies D1 migrations and starts the local Worker/API plus Vite client. Production authentication must never use a debug bypass.
 
-`npm run dev` applies local D1 migrations and starts:
+## Verification
 
-- client: `http://127.0.0.1:5173`
-- Worker/D1: `http://127.0.0.1:8787`
-- `/api/*` proxied from Vite to Wrangler for one-origin local play.
-
-Verification:
+The normal engineering gate is:
 
 ```bash
 npm run ci
 npm run test:browser
 ```
 
-## DEV deployment
+CI intentionally uses no routine Actions artifact/package uploads. A passing automated gate proves code/build contracts, **not** visual quality or fun.
 
-The current development environment uses a separate `tinygame-dev` D1 database and Worker configuration. Never guess or hand-edit a D1 UUID.
+## Cloudflare DEV
 
-Create/configure a new DEV database only when required:
+The repository contains `wrangler.dev.jsonc` for the provisioned `tinygame-dev` environment. Deployment requires an authenticated Cloudflare/Wrangler environment.
 
-```bash
-npx wrangler d1 create tinygame-dev --location weur
-npx wrangler d1 info tinygame-dev --json > tinygame-dev-d1.json
-node scripts/configure-d1-env.mjs dev tinygame-dev-d1.json
-```
-
-Required Worker secrets/values:
-
-```text
-GOOGLE_CLIENT_ID
-ALLOWED_ORIGIN
-SESSION_PEPPER
-AUTH_RATE_LIMIT_SALT
-```
-
-Apply migrations and deploy the exact candidate:
+Typical exact-candidate flow:
 
 ```bash
-npx wrangler d1 migrations apply tinygame-dev --remote --config wrangler.dev.jsonc
-VITE_GOOGLE_CLIENT_ID="<public-google-client-id>" TINY_ENV=dev npm run build
-npx wrangler deploy --config wrangler.dev.jsonc
+git checkout <candidate-sha>
+npm ci
+npm run ci
+npm run deploy:dev
 ```
 
-## Google OAuth
-
-Use a Google **Web application** OAuth client. Authorized JavaScript origins must include the local Vite origin and the final DEV HTTPS origin being tested.
-
-The Google client ID is public. Do not put an OAuth client secret in the browser or repository.
-
-## Environment separation
-
-DEV and LIVE must use distinct:
-
-- D1 databases;
-- Worker configuration/secrets;
-- allowed origins;
-- release evidence.
-
-LIVE promotion is a separate future step. Never turn DEV configuration into LIVE by renaming it.
+After deployment, verify the live `/release.json` and visible build stamp identify the exact candidate before recording acceptance evidence.
 
 ## Release rule
 
-Green CI is necessary but insufficient.
+Do not mark V0.1 accepted until the exact deployed candidate records both:
 
-The exact deployed candidate must record both:
+- `ANDROID ACCEPTANCE: PASS`
+- `FAMILY ACCEPTANCE: PASS`
 
-```text
-ANDROID ACCEPTANCE: PASS
-FAMILY ACCEPTANCE: PASS
-```
-
-in `docs/quality/v0.1-android-acceptance.md` before V0.1 is accepted.
+Human FAIL overrides CI PASS.

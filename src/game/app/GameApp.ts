@@ -9,6 +9,7 @@ import { TouchInput } from '../input/TouchInput';
 import { CollisionWorld } from '../player/CollisionWorld';
 import { PlayerController, type PlayerMode } from '../player/PlayerController';
 import { PlayerView } from '../player/PlayerView';
+import { cameraTargetInto, followAlpha, type CameraTarget } from '../player/cameraRig';
 import { WorldBuilder } from '../world/WorldBuilder';
 import { Atmosphere } from '../world/Atmosphere';
 import { SoundFx } from '../audio/SoundFx';
@@ -22,7 +23,9 @@ import { VillagerManager } from '../world/VillagerManager';
 import { BikeController } from '../vehicles/BikeController';
 import { CarController } from '../vehicles/CarController';
 import { RaftController } from '../vehicles/RaftController';
-import { VehicleSpawner, PAINT_COLORS } from '../vehicles/VehicleSpawner';
+import { RaftWake } from '../vehicles/RaftWake';
+import { VehicleSpawner } from '../vehicles/VehicleSpawner';
+import { bikeLeanDegrees, raftPose } from '../vehicles/vehicleFeel';
 import type { Hud } from '../ui/Hud';
 
 export class GameApp {
@@ -44,27 +47,23 @@ export class GameApp {
     this.app = app;
     app.start();
 
-    // Zero-Byte Procedural Sound & Music Engine
     const sound = new SoundFx();
 
-    // Scene ambient lighting
     app.scene.ambientLight = new pc.Color(0.74, 0.78, 0.76);
 
-    // Warm directional sun
     const sun = new pc.Entity('Sun');
     sun.addComponent('light', {
       type: 'directional',
       color: new pc.Color(1.0, 0.96, 0.86),
       intensity: 1.35,
       castShadows: true,
-      shadowResolution: 2048,
+      shadowResolution: 1024,
       shadowBias: 0.15,
       normalOffsetBias: 0.05
     });
     sun.setEulerAngles(48, 38, 0);
     app.root.addChild(sun);
 
-    // Soft sky fill light
     const skyFill = new pc.Entity('SkyFill');
     skyFill.addComponent('light', {
       type: 'directional',
@@ -75,7 +74,6 @@ export class GameApp {
     skyFill.setEulerAngles(-60, 210, 0);
     app.root.addChild(skyFill);
 
-    // Main camera with clear color matching atmospheric horizon
     const camera = new pc.Entity('Camera');
     camera.addComponent('camera', {
       clearColor: new pc.Color(0.76, 0.88, 0.98),
@@ -84,18 +82,16 @@ export class GameApp {
     });
     app.root.addChild(camera);
 
-    // World & Atmosphere
     const atmosphere = new Atmosphere(app);
     const runtime = new WorldBuilder(app).build();
 
-    // Animated NPC Villagers
     const villagers = new VillagerManager(app);
     villagers.buildAll();
 
-    // Brookhaven House Claiming System
+    // V0.1 has one player home. The legacy manager name remains only to avoid a
+    // broad composition-root rewrite; no ownership/lock state is promised.
     const house = new HouseManager();
 
-    // Vehicle Spawner
     const vehicleSpawner = new VehicleSpawner();
 
     const spawn = SPAWN_POINTS.find((point) => point.id === bootstrap.profile.lastSpawnId) ?? SPAWN_POINTS[0]!;
@@ -110,10 +106,8 @@ export class GameApp {
     this.keyboard = new KeyboardInput(input, this.canvas);
     new TouchInput(input, this.hud.movePad, this.hud.lookPad, this.hud.jumpButton, this.hud.actionButton);
 
-    // Speed boost state for drinking coffee
     let coffeeSpeedBoostTimer = 0;
 
-    // Use prop action (Drinking coffee, eating ice cream, spraying water hose)
     const useCurrentProp = (prop: string) => {
       if (prop === 'coffee') {
         sound.slurp();
@@ -128,7 +122,6 @@ export class GameApp {
       }
     };
 
-    // HUD Callback Wiring
     this.hud.onSelectPropCallback = (prop) => {
       view.setProp(prop);
       if (prop === 'coffee') {
@@ -163,7 +156,6 @@ export class GameApp {
     this.hud.onToggleMusicCallback = () => sound.toggleMusic();
     this.hud.onUsePropCallback = (prop) => useCurrentProp(prop);
 
-    // Keyboard Shortcuts
     this.keydownHandler = (e: KeyboardEvent) => {
       if (e.key === '1') this.hud.selectProp('coffee');
       else if (e.key === '2') this.hud.selectProp('icecream');
@@ -195,12 +187,11 @@ export class GameApp {
     );
     const discovered = new Set<DiscoveryId>(bootstrap.discoveries);
 
-    // Vehicles
     const bike = new BikeController({ x: 15, y: heightAt(15, 7), z: 7 }, collision);
     const car = new CarController({ x: 5, y: heightAt(5, 8), z: 8 }, collision);
     const raft = new RaftController({ x: 50, y: WATER_SURFACE_Y + 0.15, z: 59 }, water);
+    const raftWake = new RaftWake(app);
 
-    // Vehicle Spawner Callback
     this.hud.onSpawnVehicleCallback = (type, color) => {
       vehicleSpawner.spawn(type, color);
       sound.carHorn();
@@ -219,12 +210,18 @@ export class GameApp {
     let carWheelAngle = 0;
     let previousBikePosition = { ...bike.snapshot.position };
     let previousCarPosition = { ...car.snapshot.position };
+    const previousViewPosition = { x: player.snapshot.position.x, z: player.snapshot.position.z };
     let prevMode: PlayerMode = 'grounded';
     let simTime = 0;
 
-    // Smooth camera state
     const camPos = new pc.Vec3(spawn.position.x, spawn.position.y + 4, spawn.position.z + 8);
     const camLook = new pc.Vec3(spawn.position.x, spawn.position.y + 1.4, spawn.position.z);
+    const camTargetVec = new pc.Vec3();
+    const camLookTargetVec = new pc.Vec3();
+    const cameraTargetState: CameraTarget = {
+      position: { x: 0, y: 0, z: 0 },
+      lookAt: { x: 0, y: 0, z: 0 }
+    };
 
     const syncLamp = () => {
       runtime.lampEntity.setLocalScale(
@@ -235,15 +232,14 @@ export class GameApp {
     };
     syncLamp();
 
-    // Brookhaven Town Roleplay Interactions
     interactions.register({
       id: 'houseClaim',
-      label: house.isClaimed ? (house.isLocked ? 'Unlock Door 🔓' : 'Lock Door 🔒') : 'Claim House 🏠',
+      label: 'Welcome Home 🏠',
       position: runtime.houseClaimPosition,
       radius: 2.8,
       run: () => {
         const res = house.claim(bootstrap.profile.playerName || 'Explorer');
-        sound.doorLock(house.isLocked);
+        sound.click();
         this.hud.showToast(res.message, 3.0);
       }
     });
@@ -357,22 +353,13 @@ export class GameApp {
     });
 
     const updateCamera = (position: Vec3, yaw: number, pitch: number, dt: number, inVehicle = false) => {
-      const isPortrait = innerWidth < innerHeight;
-      const distance = inVehicle ? (isPortrait ? 13.5 : 11.5) : (isPortrait ? 10.2 : 8.5);
-      const heightOffset = inVehicle ? (isPortrait ? 5.2 : 4.6) : (isPortrait ? 4.2 : 3.8);
-      const pitchRad = (pitch * Math.PI) / 180;
-      const targetCamX = position.x - Math.sin(yaw) * Math.cos(pitchRad) * distance;
-      const targetCamY = position.y + heightOffset - Math.sin(pitchRad) * distance * 0.45;
-      const targetCamZ = position.z + Math.cos(yaw) * Math.cos(pitchRad) * distance;
-
-      const targetLookX = position.x;
-      const targetLookY = position.y + (isPortrait ? 1.6 : 1.4);
-      const targetLookZ = position.z;
-
-      const lerpFactor = Math.min(1, dt * 12);
-      camPos.lerp(camPos, new pc.Vec3(targetCamX, targetCamY, targetCamZ), lerpFactor);
-      camLook.lerp(camLook, new pc.Vec3(targetLookX, targetLookY, targetLookZ), lerpFactor);
-
+      const aspect = innerWidth / Math.max(1, innerHeight);
+      cameraTargetInto(cameraTargetState, position, yaw, pitch, aspect, inVehicle);
+      camTargetVec.set(cameraTargetState.position.x, cameraTargetState.position.y, cameraTargetState.position.z);
+      camLookTargetVec.set(cameraTargetState.lookAt.x, cameraTargetState.lookAt.y, cameraTargetState.lookAt.z);
+      const alpha = followAlpha(dt, 12);
+      camPos.lerp(camPos, camTargetVec, alpha);
+      camLook.lerp(camLook, camLookTargetVec, alpha);
       camera.setPosition(camPos);
       camera.lookAt(camLook);
     };
@@ -382,8 +369,9 @@ export class GameApp {
       const travelled = Math.hypot(state.position.x - previousBikePosition.x, state.position.z - previousBikePosition.z);
       bikeWheelAngle = (bikeWheelAngle + (travelled / 1.25) * 180 / Math.PI) % 360;
       previousBikePosition = { ...state.position };
+      const lean = -bikeLeanDegrees(state.steerInput, Math.min(1, Math.abs(state.speed) / bike.maxSpeed));
       runtime.bikeEntity.setPosition(state.position.x, state.position.y + 0.75, state.position.z);
-      runtime.bikeEntity.setEulerAngles(0, (state.yaw * 180) / Math.PI, 0);
+      runtime.bikeEntity.setEulerAngles(0, (state.yaw * 180) / Math.PI, lean);
       for (const pivot of runtime.bikeWheelPivots) pivot.setLocalEulerAngles(bikeWheelAngle, 0, 0);
     };
 
@@ -397,12 +385,8 @@ export class GameApp {
       runtime.carEntity.setPosition(state.position.x, state.position.y + 0.55, state.position.z);
       runtime.carEntity.setEulerAngles(0, (state.yaw * 180) / Math.PI, 0);
 
-      for (const mount of runtime.carFrontWheelMounts) {
-        mount.setLocalEulerAngles(0, state.steerAngle, 0);
-      }
-      for (const pivot of runtime.carWheelPivots) {
-        pivot.setLocalEulerAngles(carWheelAngle, 0, 0);
-      }
+      for (const mount of runtime.carFrontWheelMounts) mount.setLocalEulerAngles(0, state.steerAngle, 0);
+      for (const pivot of runtime.carWheelPivots) pivot.setLocalEulerAngles(carWheelAngle, 0, 0);
     };
 
     app.on('update', (dt: number) => {
@@ -413,9 +397,7 @@ export class GameApp {
       const frame = input.snapshot();
       let snap = player.snapshot;
 
-      if (frame.jumpPressed && snap.mode === 'grounded') {
-        sound.jump();
-      }
+      if (frame.jumpPressed && snap.mode === 'grounded') sound.jump();
 
       if (car.snapshot.mounted) {
         this.hud.setCarMode(true);
@@ -450,7 +432,6 @@ export class GameApp {
       } else {
         this.hud.setCarMode(false);
 
-        // Apply coffee speed boost if active
         if (coffeeSpeedBoostTimer > 0) {
           frame.moveX *= 1.35;
           frame.moveY *= 1.35;
@@ -458,13 +439,8 @@ export class GameApp {
 
         snap = player.update(dt, frame);
 
-        if (prevMode === 'airborne' && snap.mode === 'grounded') {
-          sound.land();
-        }
-
-        if (prevMode !== 'swimming' && snap.mode === 'swimming') {
-          sound.splash();
-        }
+        if (prevMode === 'airborne' && snap.mode === 'grounded') sound.land();
+        if (prevMode !== 'swimming' && snap.mode === 'swimming') sound.splash();
 
         if (frame.interactPressed) {
           if (car.canMount(snap.position) && car.mount(snap.position)) {
@@ -489,33 +465,40 @@ export class GameApp {
       syncCarVisual();
 
       const raftState = raft.snapshot;
-      const raftBob = Math.sin(simTime * 2.2) * 0.04;
-      const raftRoll = Math.sin(simTime * 1.8) * 1.5;
-      runtime.raftEntity.setPosition(raftState.position.x, raftState.position.y + raftBob, raftState.position.z);
-      runtime.raftEntity.setEulerAngles(0, (raftState.yaw * 180) / Math.PI, raftRoll);
+      const raftSpeedRatio = Math.min(1, Math.abs(raftState.speed) / raft.maxSpeed);
+      const raftMotion = raftPose(simTime, raftSpeedRatio, raftState.steerInput);
+      runtime.raftEntity.setPosition(raftState.position.x, raftState.position.y + raftMotion.bob, raftState.position.z);
+      runtime.raftEntity.setEulerAngles(raftMotion.pitch, (raftState.yaw * 180) / Math.PI, raftMotion.roll);
+      raftWake.update(raftState.position, raftState.yaw, raftSpeedRatio, simTime);
 
-      const moveMagnitude = Math.hypot(frame.moveX, frame.moveY);
+      const travelled = Math.hypot(
+        snap.position.x - previousViewPosition.x,
+        snap.position.z - previousViewPosition.z
+      );
+      const actualTravelSpeed = dt > 0 ? Math.min(12, travelled / dt) : 0;
+      previousViewPosition.x = snap.position.x;
+      previousViewPosition.z = snap.position.z;
+
       const currentSpeed = snap.mode === 'car'
         ? Math.abs(car.snapshot.speed)
         : snap.mode === 'bike'
         ? Math.abs(bike.snapshot.speed)
-        : (moveMagnitude * (snap.mode === 'swimming' ? 3.6 : (coffeeSpeedBoostTimer > 0 ? 8.2 : 6.0)));
+        : snap.mode === 'raft'
+        ? 0
+        : actualTravelSpeed;
 
-      view.sync(
-        snap.position,
-        snap.yaw,
-        currentSpeed,
-        dt,
-        snap.mode,
-        car.snapshot.steerAngle / 32
-      );
+      const viewSteer = snap.mode === 'bike'
+        ? bike.snapshot.steerInput
+        : snap.mode === 'car'
+        ? car.snapshot.steerAngle / 32
+        : 0;
 
-      // Update NPC Villagers
+      view.sync(snap.position, snap.yaw, currentSpeed, dt, snap.mode, viewSteer);
+
       villagers.update(simTime, snap.position);
+      const vehicleCamera = snap.mode === 'car' || snap.mode === 'bike' || snap.mode === 'raft';
+      updateCamera(snap.position, snap.yaw, snap.pitch, dt, vehicleCamera);
 
-      updateCamera(snap.position, snap.yaw, snap.pitch, dt, snap.mode === 'car');
-
-      // Discovery triggers
       for (const discovery of DISCOVERIES) {
         if (discovered.has(discovery.id) || Math.hypot(snap.position.x - discovery.position.x, snap.position.z - discovery.position.z) > discovery.radius) continue;
         discovered.add(discovery.id);
@@ -530,7 +513,6 @@ export class GameApp {
         });
       }
 
-      // Interaction prompts and floating marker
       let action: string | null = null;
       let targetMarkerPos: { x: number; y: number; z: number } | null = null;
 
@@ -564,9 +546,7 @@ export class GameApp {
       this.canvas.width = Math.floor(innerWidth * dpr);
       this.canvas.height = Math.floor(innerHeight * dpr);
       const aspect = innerWidth / innerHeight;
-      if (camera.camera) {
-        camera.camera.fov = aspect < 1.0 ? Math.min(68, Math.round(54 / aspect)) : 54;
-      }
+      if (camera.camera) camera.camera.fov = aspect < 1.0 ? Math.min(68, Math.round(54 / aspect)) : 54;
       app.resizeCanvas();
     };
     window.addEventListener('resize', this.resizeHandler);
