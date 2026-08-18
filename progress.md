@@ -4,22 +4,22 @@
 **Implementation PR:** #2  
 **Implementation branch:** `feat/v0.1-mobile-pwa`  
 **Plan:** `docs/superpowers/plans/2026-08-17-tinyworld-web-v0.1.md`  
-**Last updated:** 2026-08-18 11:15 Europe/London
+**Last updated:** 2026-08-18 11:31 Europe/London
 
 ## Session handoff
 
 TinyWorld is being rebuilt as a mobile-first browser/PWA game in `wilfgrainger/tinygame`. The Roblox repository is historical only. This file is the durable cross-session handoff: every implementation session must read it first and update it before finishing.
 
-The code-owned V0.1 vertical slice is on PR #2 (`ea8bd9e`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured. 
+The code-owned V0.1 vertical slice with the Brookhaven open-town roleplay overhaul is on PR #2 (`8581173`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured. 
 
 - **Current Candidate SHA**: `3bf21fb5d91f1da347b5cc5882bd0d7f36846d4b`
 - **PR**: PR #2 (`feat/v0.1-mobile-pwa` -> `main`)
 - **Live DEV Endpoint**: `https://tinygame-dev.zerobytemode.workers.dev`
 
 ## Work Completed
-1. **Zero-Byte Procedural Web Audio Engine**: Synthesizes footsteps, bicycle bells, water swimming/splash, jumps, landing impacts, discovery fanfares, espresso steam, cash register barcode scanner, car horns, doorbells, and light switches.
+1. **Zero-Byte Procedural Web Audio Engine**: Synthesizes footsteps across grass/asphalt/wood/stone, bicycle bells, water swimming/splash, jumps, landing impacts, discovery fanfares, espresso steam, cash register barcode scanner, car horns, doorbells, and light switches.
 2. **Atmospheric Environment & Shaders**: Linear depth fog, procedural moving cumulus clouds, chimney smoke particles, fountain droplets, and floating interaction markers.
-3. **Procedural Explorer Character Model**: Anatomical proportions, walking/running gait with dynamic head/torso sway, turn banking, landing squash, pedaling on bike, car driving pose, and swimming breaststroke crawl.
+3. **Procedural Explorer Character Model**: Anatomical proportions, walking/running gait with dynamic head/torso sway, turn banking, landing squash, pedaling on bike, car driving pose, hand props posture, and swimming breaststroke crawl.
 4. **Brookhaven-Style Open Town & Roleplay Infrastructure**:
    - Paved asphalt roads with dashed white centerlines, curbs, sidewalks, and crosswalks.
    - Town Square with 4-faced Clock Tower and central Tiered Fountain.
@@ -51,15 +51,16 @@ The code-owned V0.1 vertical slice is on PR #2 (`ea8bd9e`). The Cloudflare `tiny
 | 1. Repo/build/release guards | PASS | package-lock.json committed, read-only CI active, source/dist guards verified. |
 | 2. Worker + D1 foundation | DEV PROVISIONED | `tinygame-dev` D1 database (4cea2e7a-7d30-47c4-991f-8cd50a6a9fea) created, `wrangler.dev.jsonc` configured, remote migration `0001_v0_1_core.sql` applied. |
 | 3. Google auth + sessions | DEV CONFIGURED | `GOOGLE_CLIENT_ID`, `ALLOWED_ORIGIN`, `SESSION_PEPPER`, and `AUTH_RATE_LIMIT_SALT` secrets set on `tinygame-dev`. |
-| 4. Profile/discovery/home persistence | VERIFIED | strict Zod contracts and prepared D1 persistence tested (26/26 unit/worker tests pass). |
+| 4. Profile/discovery/home persistence | VERIFIED | strict Zod contracts and prepared D1 persistence tested (28/28 unit/worker tests pass). |
 | 5. Browser shell + PlayCanvas bootstrap | VERIFIED | one PlayCanvas app, Google UX/API client, build stamp and restrictive headers implemented. |
 | 6. Touch/desktop input + movement | VERIFIED | pointer touch controls, keyboard/mouse, kinematic movement/collision and procedural Explorer player. |
-| 7. Authored non-flat world + atmosphere | VERIFIED | five-zone vertex-blended terrain, fog, clouds, chimney smoke, fountain spray, and detailed architecture. |
-| 8. Home + discoveries + audio | VERIFIED | enterable home, lamp save, chair/cupboard interactions, Web Audio procedural sound effects synthesizer, three persistent discoveries. |
+| 7. Authored town world + atmosphere | VERIFIED | five-zone vertex-blended terrain, paved roads, clock tower, enterable cafe, supermarket, town hall, suburban estate, fog, clouds, and particles. |
+| 8. Home + roleplay + audio | VERIFIED | enterable home, doorbell chime, espresso machine, grocery register, mayor podium, sofa/wardrobe/lamp interactions, Web Audio synth, persistent discoveries. |
 | 9. Swimming | VERIFIED | bounded water/swim state with prone crawl animation and recovery logic implemented. |
-| 10. Tiny Bike | VERIFIED | mounted direct-control bicycle with pedaling animation, turning bank, and bicycle bell sound. |
-| 11. Tiny Raft | VERIFIED | physical harbour raft with water bobbing, direct throttle/steering and bounded water lifecycle. |
+| 10. Town Mini-Car & Cruiser Bike | VERIFIED | direct-control mini-car with steering front wheels, spinning tires, horn audio, and cruiser bicycle. |
+| 11. Handheld Roleplay Props | VERIFIED | HUD pill drawer with coffee mug, ice cream cone, spotlight flashlight, and buoyant party balloon. |
 | 12. PWA + DEV + Android/family acceptance | DEV DEPLOYED / AWAITING EVIDENCE | DEV live at `https://tinygame-dev.zerobytemode.workers.dev`. Real Android route and family playtest pending. |
+
 
 ## Owner-only inputs / actions still expected
 
