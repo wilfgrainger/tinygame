@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "tinygame-dev",
+  "main": "./src/worker/index.ts",
+  "compatibility_date": "2026-08-17",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tinygame-dev",
+      "database_id": "4cea2e7a-7d30-47c4-991f-8cd50a6a9fea",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "TINY_ENV": "dev"
+  },
+  "secrets": {
+    "required": [
+      "GOOGLE_CLIENT_ID",
+      "ALLOWED_ORIGIN",
+      "SESSION_PEPPER",
+      "AUTH_RATE_LIMIT_SALT"
+    ]
+  }
+}
