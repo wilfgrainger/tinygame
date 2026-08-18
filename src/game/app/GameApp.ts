@@ -261,15 +261,16 @@ export class GameApp {
     });
 
     const updateCamera = (position: Vec3, yaw: number, pitch: number, dt: number, inVehicle = false) => {
-      const distance = inVehicle ? 11.5 : 8.5;
-      const heightOffset = inVehicle ? 4.8 : 3.8;
+      const isPortrait = innerWidth < innerHeight;
+      const distance = inVehicle ? (isPortrait ? 13.5 : 11.5) : (isPortrait ? 10.2 : 8.5);
+      const heightOffset = inVehicle ? (isPortrait ? 5.2 : 4.6) : (isPortrait ? 4.2 : 3.8);
       const pitchRad = (pitch * Math.PI) / 180;
       const targetCamX = position.x - Math.sin(yaw) * Math.cos(pitchRad) * distance;
       const targetCamY = position.y + heightOffset - Math.sin(pitchRad) * distance * 0.45;
       const targetCamZ = position.z + Math.cos(yaw) * Math.cos(pitchRad) * distance;
 
       const targetLookX = position.x;
-      const targetLookY = position.y + 1.4;
+      const targetLookY = position.y + (isPortrait ? 1.6 : 1.4);
       const targetLookZ = position.z;
 
       const lerpFactor = Math.min(1, dt * 12);
@@ -279,6 +280,7 @@ export class GameApp {
       camera.setPosition(camPos);
       camera.lookAt(camLook);
     };
+
 
     const syncBikeVisual = () => {
       const state = bike.snapshot;
@@ -445,10 +447,15 @@ export class GameApp {
       const dpr = Math.min(window.devicePixelRatio || 1, matchMedia('(pointer: coarse)').matches ? 1.5 : 2);
       this.canvas.width = Math.floor(innerWidth * dpr);
       this.canvas.height = Math.floor(innerHeight * dpr);
+      const aspect = innerWidth / innerHeight;
+      if (camera.camera) {
+        camera.camera.fov = aspect < 1.0 ? Math.min(68, Math.round(54 / aspect)) : 54;
+      }
       app.resizeCanvas();
     };
     window.addEventListener('resize', this.resizeHandler);
     this.resizeHandler();
+
   }
 
   destroy() {

@@ -28,39 +28,45 @@ export type WorldRuntime = {
 };
 
 export class WorldBuilder {
-  // Town & Architectural Materials
-  private asphalt = material(new pc.Color(0.22, 0.24, 0.26), 0.2);
-  private roadStripe = material(new pc.Color(0.96, 0.96, 0.96), 0.3);
-  private sidewalk = material(new pc.Color(0.78, 0.79, 0.80), 0.15);
-  private curb = material(new pc.Color(0.68, 0.70, 0.72), 0.15);
-  private wood = material(new pc.Color(0.48, 0.30, 0.18), 0.25);
-  private darkWood = material(new pc.Color(0.25, 0.15, 0.08), 0.2);
-  private lightWood = material(new pc.Color(0.74, 0.58, 0.40), 0.25);
-  private cream = material(new pc.Color(0.95, 0.92, 0.84), 0.15);
-  private cafePink = material(new pc.Color(0.95, 0.58, 0.68), 0.2);
-  private martGreen = material(new pc.Color(0.32, 0.68, 0.46), 0.2);
-  private townBlue = material(new pc.Color(0.28, 0.48, 0.72), 0.25);
-  private policeNavy = material(new pc.Color(0.16, 0.24, 0.42), 0.3);
-  private terracotta = material(new pc.Color(0.82, 0.40, 0.28), 0.2);
-  private warmStone = material(new pc.Color(0.72, 0.70, 0.64), 0.15);
-  private darkStone = material(new pc.Color(0.44, 0.44, 0.42), 0.2);
-  private leafOak = material(new pc.Color(0.28, 0.58, 0.26), 0.15);
-  private leafOak2 = material(new pc.Color(0.38, 0.68, 0.32), 0.15);
-  private leafPine = material(new pc.Color(0.18, 0.42, 0.26), 0.15);
-  private leafBirch = material(new pc.Color(0.78, 0.72, 0.28), 0.2);
-  private water = material(new pc.Color(0.22, 0.62, 0.78), 0.85, 0.05, 0.78);
-  private glass = material(new pc.Color(0.68, 0.85, 0.95), 0.9, 0.1, 0.65);
-  private warmGlow = material(new pc.Color(1.0, 0.90, 0.55), 0.4, 0, 1.0, new pc.Color(0.9, 0.75, 0.35));
-  private windowGlow = material(new pc.Color(1.0, 0.88, 0.52), 0.8, 0, 0.95, new pc.Color(0.8, 0.65, 0.2));
-  private redFlower = material(new pc.Color(0.92, 0.25, 0.25), 0.3);
-  private yellowFlower = material(new pc.Color(0.98, 0.82, 0.22), 0.3);
+  // Rich Curated Material Palette
+  private asphalt = material(new pc.Color(0.20, 0.22, 0.24), 0.15);
+  private roadStripe = material(new pc.Color(0.96, 0.96, 0.96), 0.35);
+  private roadYellow = material(new pc.Color(0.96, 0.82, 0.22), 0.35);
+  private sidewalk = material(new pc.Color(0.82, 0.83, 0.85), 0.2);
+  private curb = material(new pc.Color(0.70, 0.72, 0.74), 0.2);
+  private wood = material(new pc.Color(0.46, 0.28, 0.16), 0.25);
+  private darkWood = material(new pc.Color(0.22, 0.13, 0.07), 0.2);
+  private lightWood = material(new pc.Color(0.76, 0.60, 0.42), 0.25);
+  private cream = material(new pc.Color(0.96, 0.93, 0.86), 0.2);
+  private cafePink = material(new pc.Color(0.94, 0.48, 0.60), 0.3, 0.1);
+  private cafeStripe = material(new pc.Color(0.98, 0.98, 0.98), 0.3);
+  private martGreen = material(new pc.Color(0.28, 0.65, 0.42), 0.3, 0.1);
+  private townBlue = material(new pc.Color(0.26, 0.46, 0.72), 0.3, 0.1);
+  private policeNavy = material(new pc.Color(0.14, 0.22, 0.38), 0.35);
+  private terracotta = material(new pc.Color(0.82, 0.38, 0.26), 0.25);
+  private warmStone = material(new pc.Color(0.74, 0.72, 0.66), 0.2);
+  private darkStone = material(new pc.Color(0.38, 0.38, 0.36), 0.2);
+  private leafOak = material(new pc.Color(0.28, 0.58, 0.26), 0.2);
+  private leafOak2 = material(new pc.Color(0.38, 0.68, 0.32), 0.2);
+  private leafPine = material(new pc.Color(0.16, 0.40, 0.24), 0.2);
+  private leafBirch = material(new pc.Color(0.80, 0.74, 0.28), 0.25);
+  private water = material(new pc.Color(0.20, 0.60, 0.78), 0.9, 0.05, 0.8);
+  private glass = material(new pc.Color(0.70, 0.88, 0.98), 0.95, 0.1, 0.6);
+  private warmGlow = material(new pc.Color(1.0, 0.92, 0.60), 0.5, 0, 1.0, new pc.Color(0.95, 0.80, 0.40));
+  private tailLightGlow = material(new pc.Color(0.95, 0.15, 0.15), 0.8, 0, 0.9, new pc.Color(0.85, 0.1, 0.1));
+  private redFlower = material(new pc.Color(0.92, 0.22, 0.25), 0.35);
+  private yellowFlower = material(new pc.Color(0.98, 0.84, 0.20), 0.35);
   private whiteFlower = material(new pc.Color(0.98, 0.98, 0.98), 0.4);
-  private metal = material(new pc.Color(0.32, 0.34, 0.38), 0.7, 0.7);
-  private chrome = material(new pc.Color(0.88, 0.90, 0.92), 0.9, 0.8);
-  private brass = material(new pc.Color(0.84, 0.70, 0.32), 0.8, 0.6);
-  private carTurquoise = material(new pc.Color(0.18, 0.75, 0.82), 0.8, 0.4);
-  private carLeather = material(new pc.Color(0.88, 0.72, 0.55), 0.3);
-  private tentCanvas = material(new pc.Color(0.88, 0.82, 0.68), 0.15);
+  private metal = material(new pc.Color(0.30, 0.32, 0.36), 0.7, 0.7);
+  private chrome = material(new pc.Color(0.90, 0.92, 0.94), 0.95, 0.85);
+  private brass = material(new pc.Color(0.86, 0.72, 0.34), 0.85, 0.65);
+  private tireRubber = material(new pc.Color(0.16, 0.16, 0.18), 0.2, 0.05);
+
+  // Sports Car Paint (Glossy Sunset Coral Red with White Racing Stripes)
+  private carPaint = material(new pc.Color(0.90, 0.26, 0.22), 0.92, 0.25);
+  private carStripe = material(new pc.Color(0.98, 0.98, 0.98), 0.9, 0.2);
+  private carLeather = material(new pc.Color(0.24, 0.22, 0.20), 0.3, 0.05);
+  private tentCanvas = material(new pc.Color(0.88, 0.82, 0.68), 0.2);
 
   private chimneyEmitters: pc.Vec3[] = [];
   private fountainEmitter = new pc.Vec3(0, 0, 0);
@@ -82,7 +88,7 @@ export class WorldBuilder {
     const bike = this.buildBike();
     const car = this.buildCar();
     const raftEntity = this.buildRaft();
-    this.buildDetails();
+    this.buildStreetDecorations();
 
     return {
       colliders: this.colliders(),
@@ -109,49 +115,44 @@ export class WorldBuilder {
     const roadGroup = new pc.Entity('TownRoadGrid');
     this.app.root.addChild(roadGroup);
 
-    // North-South Main Town Avenue (Z: -32 to 32, X: 0)
-    primitive(this.app, 'AvenueAsphalt', 'box', this.asphalt, new pc.Vec3(0, roadY, 0), new pc.Vec3(8.8, 0.12, 64), roadGroup);
-    // Sidewalks along Avenue
-    primitive(this.app, 'AvenueSidewalkL', 'box', this.sidewalk, new pc.Vec3(-5.6, roadY + 0.08, 0), new pc.Vec3(2.4, 0.18, 64), roadGroup);
-    primitive(this.app, 'AvenueSidewalkR', 'box', this.sidewalk, new pc.Vec3(5.6, roadY + 0.08, 0), new pc.Vec3(2.4, 0.18, 64), roadGroup);
-
+    // North-South Main Avenue (Z: -34 to 34)
+    primitive(this.app, 'AvenueAsphalt', 'box', this.asphalt, new pc.Vec3(0, roadY, 0), new pc.Vec3(8.4, 0.12, 68), roadGroup);
+    // Sidewalks
+    primitive(this.app, 'AvenueSidewalkL', 'box', this.sidewalk, new pc.Vec3(-5.4, roadY + 0.08, 0), new pc.Vec3(2.4, 0.18, 68), roadGroup);
+    primitive(this.app, 'AvenueSidewalkR', 'box', this.sidewalk, new pc.Vec3(5.4, roadY + 0.08, 0), new pc.Vec3(2.4, 0.18, 68), roadGroup);
     // Curbs
-    primitive(this.app, 'AvenueCurbL', 'box', this.curb, new pc.Vec3(-4.45, roadY + 0.09, 0), new pc.Vec3(0.2, 0.20, 64), roadGroup);
-    primitive(this.app, 'AvenueCurbR', 'box', this.curb, new pc.Vec3(4.45, roadY + 0.09, 0), new pc.Vec3(0.2, 0.20, 64), roadGroup);
+    primitive(this.app, 'AvenueCurbL', 'box', this.curb, new pc.Vec3(-4.25, roadY + 0.09, 0), new pc.Vec3(0.2, 0.20, 68), roadGroup);
+    primitive(this.app, 'AvenueCurbR', 'box', this.curb, new pc.Vec3(4.25, roadY + 0.09, 0), new pc.Vec3(0.2, 0.20, 68), roadGroup);
 
-    // East-West Boulevard (X: -36 to 36, Z: 0)
-    primitive(this.app, 'BoulevardAsphalt', 'box', this.asphalt, new pc.Vec3(0, roadY, 0), new pc.Vec3(72, 0.12, 8.8), roadGroup);
-    primitive(this.app, 'BoulevardSidewalkT', 'box', this.sidewalk, new pc.Vec3(0, roadY + 0.08, 5.6), new pc.Vec3(72, 0.18, 2.4), roadGroup);
-    primitive(this.app, 'BoulevardSidewalkB', 'box', this.sidewalk, new pc.Vec3(0, roadY + 0.08, -5.6), new pc.Vec3(72, 0.18, 2.4), roadGroup);
+    // East-West Boulevard (X: -36 to 36)
+    primitive(this.app, 'BoulevardAsphalt', 'box', this.asphalt, new pc.Vec3(0, roadY, 0), new pc.Vec3(72, 0.12, 8.4), roadGroup);
+    primitive(this.app, 'BoulevardSidewalkT', 'box', this.sidewalk, new pc.Vec3(0, roadY + 0.08, 5.4), new pc.Vec3(72, 0.18, 2.4), roadGroup);
+    primitive(this.app, 'BoulevardSidewalkB', 'box', this.sidewalk, new pc.Vec3(0, roadY + 0.08, -5.4), new pc.Vec3(72, 0.18, 2.4), roadGroup);
 
-    // Painted White Dashed Centerlines
-    for (let z = -28; z <= 28; z += 4.5) {
-      if (Math.abs(z) < 5) continue; // skip intersection
-      primitive(this.app, 'AvenueStripe', 'box', this.roadStripe, new pc.Vec3(0, roadY + 0.07, z), new pc.Vec3(0.32, 0.02, 2.4), roadGroup);
+    // White Dashed Centerlines
+    for (let z = -30; z <= 30; z += 4.5) {
+      if (Math.abs(z) < 5.5) continue;
+      primitive(this.app, 'AvenueStripe', 'box', this.roadStripe, new pc.Vec3(0, roadY + 0.07, z), new pc.Vec3(0.3, 0.02, 2.4), roadGroup);
     }
     for (let x = -32; x <= 32; x += 4.5) {
-      if (Math.abs(x) < 5) continue; // skip intersection
-      primitive(this.app, 'BoulevardStripe', 'box', this.roadStripe, new pc.Vec3(x, roadY + 0.07, 0), new pc.Vec3(2.4, 0.02, 0.32), roadGroup);
+      if (Math.abs(x) < 5.5) continue;
+      primitive(this.app, 'BoulevardStripe', 'box', this.roadStripe, new pc.Vec3(x, roadY + 0.07, 0), new pc.Vec3(2.4, 0.02, 0.3), roadGroup);
     }
 
     // Pedestrian Zebra Crossings
     for (const offset of [-4.8, 4.8]) {
-      // NS Crosswalks
-      for (let s = -3.2; s <= 3.2; s += 1.1) {
-        primitive(this.app, 'ZebraNS', 'box', this.roadStripe, new pc.Vec3(s, roadY + 0.07, offset), new pc.Vec3(0.65, 0.02, 1.4), roadGroup);
-      }
-      // EW Crosswalks
-      for (let s = -3.2; s <= 3.2; s += 1.1) {
-        primitive(this.app, 'ZebraEW', 'box', this.roadStripe, new pc.Vec3(offset, roadY + 0.07, s), new pc.Vec3(1.4, 0.02, 0.65), roadGroup);
+      for (let s = -3.0; s <= 3.0; s += 1.0) {
+        primitive(this.app, 'ZebraNS', 'box', this.roadStripe, new pc.Vec3(s, roadY + 0.07, offset), new pc.Vec3(0.6, 0.02, 1.2), roadGroup);
+        primitive(this.app, 'ZebraEW', 'box', this.roadStripe, new pc.Vec3(offset, roadY + 0.07, s), new pc.Vec3(1.2, 0.02, 0.6), roadGroup);
       }
     }
 
-    // Streetlamps along sidewalks
+    // Vintage Cast-Iron Streetlamps with Glowing Glass Lanterns
     const lampPosts = [
-      { x: -5.8, z: -14 }, { x: 5.8, z: -14 },
-      { x: -5.8, z: 14 }, { x: 5.8, z: 14 },
-      { x: -16, z: 5.8 }, { x: 16, z: 5.8 },
-      { x: -16, z: -5.8 }, { x: 16, z: -5.8 }
+      { x: -5.6, z: -14 }, { x: 5.6, z: -14 },
+      { x: -5.6, z: 14 }, { x: 5.6, z: 14 },
+      { x: -16, z: 5.6 }, { x: 16, z: 5.6 },
+      { x: -16, z: -5.6 }, { x: 16, z: -5.6 }
     ];
     for (const lp of lampPosts) {
       const ly = heightAt(lp.x, lp.z);
@@ -159,20 +160,18 @@ export class WorldBuilder {
       post.setPosition(lp.x, ly, lp.z);
       this.app.root.addChild(post);
 
-      primitive(this.app, 'LampPole', 'cylinder', this.metal, new pc.Vec3(0, 2.4, 0), new pc.Vec3(0.22, 4.8, 0.22), post);
-      primitive(this.app, 'LampArm', 'box', this.metal, new pc.Vec3(0, 4.6, 0.4), new pc.Vec3(0.18, 0.18, 0.9), post);
-      primitive(this.app, 'LampLantern', 'box', this.metal, new pc.Vec3(0, 4.3, 0.8), new pc.Vec3(0.55, 0.7, 0.55), post);
-      primitive(this.app, 'LampBulb', 'sphere', this.warmGlow, new pc.Vec3(0, 4.25, 0.8), new pc.Vec3(0.42, 0.45, 0.42), post);
+      primitive(this.app, 'LampBase', 'cylinder', this.metal, new pc.Vec3(0, 0.4, 0), new pc.Vec3(0.45, 0.8, 0.45), post);
+      primitive(this.app, 'LampPole', 'cylinder', this.metal, new pc.Vec3(0, 2.5, 0), new pc.Vec3(0.18, 4.6, 0.18), post);
+      primitive(this.app, 'LampArm', 'box', this.metal, new pc.Vec3(0, 4.8, 0.35), new pc.Vec3(0.14, 0.14, 0.8), post);
+      primitive(this.app, 'LampLanternCap', 'cone', this.metal, new pc.Vec3(0, 4.75, 0.75), new pc.Vec3(0.6, 0.3, 0.6), post);
+      primitive(this.app, 'LampBulb', 'sphere', this.warmGlow, new pc.Vec3(0, 4.5, 0.75), new pc.Vec3(0.38, 0.42, 0.38), post);
     }
   }
 
   private buildTownSquare() {
     const y = heightAt(0, 0);
-    const square = new pc.Entity('TownSquare');
-    square.setPosition(0, y, 0);
-    this.app.root.addChild(square);
 
-    // Landmark Town Clock Tower
+    // Landmark 4-Faced Clock Tower
     const towerX = 0;
     const towerZ = -18;
     const towerY = heightAt(towerX, towerZ);
@@ -180,17 +179,13 @@ export class WorldBuilder {
     tower.setPosition(towerX, towerY, towerZ);
     this.app.root.addChild(tower);
 
-    // Base & Shaft
+    // Tower Architecture
     primitive(this.app, 'TowerBase', 'box', this.warmStone, new pc.Vec3(0, 2.5, 0), new pc.Vec3(4.8, 5.0, 4.8), tower);
     primitive(this.app, 'TowerShaft', 'box', this.cream, new pc.Vec3(0, 8.5, 0), new pc.Vec3(3.8, 7.0, 3.8), tower);
     primitive(this.app, 'TowerBelfry', 'box', this.warmStone, new pc.Vec3(0, 13.0, 0), new pc.Vec3(4.2, 2.2, 4.2), tower);
 
-    // Clock faces on 4 sides
     const clockFaces: ReadonlyArray<readonly [number, number, number]> = [
-      [0, 0, 1.95],
-      [180, 0, -1.95],
-      [90, 1.95, 0],
-      [-90, -1.95, 0]
+      [0, 0, 1.95], [180, 0, -1.95], [90, 1.95, 0], [-90, -1.95, 0]
     ];
     for (const [rot, ox, oz] of clockFaces) {
       const clock = primitive(this.app, 'ClockFace', 'cylinder', this.roadStripe, new pc.Vec3(ox, 13.0, oz), new pc.Vec3(1.8, 0.12, 1.8), tower);
@@ -198,13 +193,11 @@ export class WorldBuilder {
       primitive(this.app, 'ClockHub', 'sphere', this.darkWood, new pc.Vec3(ox, 13.0, oz), new pc.Vec3(0.25, 0.25, 0.25), tower);
     }
 
-
-    // Spire roof
     const spire = primitive(this.app, 'TowerSpire', 'cone', this.townBlue, new pc.Vec3(0, 16.5, 0), new pc.Vec3(4.4, 5.0, 4.4), tower);
     spire.setLocalEulerAngles(0, 0, 0);
     primitive(this.app, 'TowerWeathervane', 'cylinder', this.brass, new pc.Vec3(0, 19.4, 0), new pc.Vec3(0.12, 1.2, 0.12), tower);
 
-    // Central Park Fountain
+    // Marble Fountain
     this.fountainEmitter = new pc.Vec3(0, y + 1.8, 0);
     primitive(this.app, 'FountainRim', 'cylinder', this.warmStone, new pc.Vec3(0, y + 0.45, 0), new pc.Vec3(5.6, 0.9, 5.6));
     primitive(this.app, 'FountainPool', 'cylinder', this.water, new pc.Vec3(0, y + 0.75, 0), new pc.Vec3(4.8, 0.25, 4.8));
@@ -216,7 +209,6 @@ export class WorldBuilder {
       primitive(this.app, 'LilyFlower', 'sphere', this.whiteFlower, new pc.Vec3(lx, y + 0.96, lz), new pc.Vec3(0.24, 0.2, 0.24));
     }
 
-    // Fountain Pedestal & Spout
     primitive(this.app, 'FountainPedestal', 'cylinder', this.warmStone, new pc.Vec3(0, y + 1.1, 0), new pc.Vec3(1.2, 1.2, 1.2));
     primitive(this.app, 'FountainBowl', 'cylinder', this.warmStone, new pc.Vec3(0, y + 1.7, 0), new pc.Vec3(2.4, 0.4, 2.4));
     primitive(this.app, 'FountainSpout', 'cylinder', this.metal, new pc.Vec3(0, y + 2.0, 0), new pc.Vec3(0.3, 0.6, 0.3));
@@ -250,13 +242,13 @@ export class WorldBuilder {
     const h = 5.2;
     const d = 8.5;
 
-    // Floor & Plastered walls
+    // Floor & Walls
     primitive(this.app, 'CafeFloor', 'box', this.lightWood, new pc.Vec3(0, 0.15, 0), new pc.Vec3(w, 0.3, d), cafe);
     primitive(this.app, 'CafeWallBack', 'box', this.cream, new pc.Vec3(0, h * 0.5, d * 0.5), new pc.Vec3(w, h, 0.4), cafe);
     primitive(this.app, 'CafeWallLeft', 'box', this.cream, new pc.Vec3(-w * 0.5, h * 0.5, 0), new pc.Vec3(0.4, h, d), cafe);
     primitive(this.app, 'CafeWallRight', 'box', this.cream, new pc.Vec3(w * 0.5, h * 0.5, 0), new pc.Vec3(0.4, h, d), cafe);
 
-    // Front Glass Window & Entrance
+    // Front Glass Window & Door Frame
     primitive(this.app, 'CafeFrontWallR', 'box', this.cafePink, new pc.Vec3(2.8, h * 0.5, -d * 0.5), new pc.Vec3(3.8, h, 0.4), cafe);
     primitive(this.app, 'CafeFrontGlass', 'box', this.glass, new pc.Vec3(-2.2, 2.2, -d * 0.5), new pc.Vec3(4.2, 3.2, 0.15), cafe);
     primitive(this.app, 'CafeFrontBase', 'box', this.cafePink, new pc.Vec3(-2.2, 0.4, -d * 0.5), new pc.Vec3(4.2, 0.8, 0.4), cafe);
@@ -265,25 +257,24 @@ export class WorldBuilder {
     const awning = primitive(this.app, 'CafeAwning', 'box', this.cafePink, new pc.Vec3(0, 4.4, -d * 0.5 - 1.2), new pc.Vec3(w + 0.6, 0.3, 2.6), cafe);
     awning.setLocalEulerAngles(18, 0, 0);
 
+    // Chalkboard Menu Sign
+    primitive(this.app, 'MenuBoard', 'box', this.darkWood, new pc.Vec3(4.2, 1.1, -d * 0.5 - 0.8), new pc.Vec3(0.8, 1.5, 0.1), cafe)
+      .setLocalEulerAngles(0, -25, 0);
+
     // Cafe Counter & Coffee Machine
     primitive(this.app, 'CafeCounter', 'box', this.wood, new pc.Vec3(0.5, 0.6, 0.2), new pc.Vec3(5.5, 1.1, 1.2), cafe);
     primitive(this.app, 'PastryCase', 'box', this.glass, new pc.Vec3(-1.2, 1.4, 0.2), new pc.Vec3(2.2, 0.6, 0.9), cafe);
 
-    // Espresso Machine & Steam Emitter
     primitive(this.app, 'EspressoMachine', 'box', this.chrome, new pc.Vec3(1.5, 1.5, 0.2), new pc.Vec3(1.2, 0.8, 0.7), cafe);
     this.cafeSteamEmitter = new pc.Vec3(x + 1.5, y + 2.0, z + 0.2);
 
-    // Cafe Tables & Chairs
-    const cafeTables: ReadonlyArray<readonly [number, number]> = [
-      [-2.5, 2.2],
-      [-2.5, -1.8]
-    ];
+    // Tables & Chairs
+    const cafeTables: ReadonlyArray<readonly [number, number]> = [[-2.5, 2.2], [-2.5, -1.8]];
     for (const [tx, tz] of cafeTables) {
       primitive(this.app, 'CafeTable', 'cylinder', this.lightWood, new pc.Vec3(tx, 0.55, tz), new pc.Vec3(1.4, 1.0, 1.4), cafe);
       primitive(this.app, 'CafeChairA', 'cylinder', this.cafePink, new pc.Vec3(tx - 0.9, 0.35, tz), new pc.Vec3(0.65, 0.7, 0.65), cafe);
       primitive(this.app, 'CafeChairB', 'cylinder', this.cafePink, new pc.Vec3(tx + 0.9, 0.35, tz), new pc.Vec3(0.65, 0.7, 0.65), cafe);
     }
-
 
     // Pitched Roof
     const roofL = primitive(this.app, 'CafeRoofL', 'box', this.terracotta, new pc.Vec3(0, h + 1.1, -1.8), new pc.Vec3(w + 1.2, 0.38, 5.5), cafe);
@@ -305,35 +296,33 @@ export class WorldBuilder {
     const h = 5.2;
     const d = 8.5;
 
-    // Floor & Plastered walls
     primitive(this.app, 'MartFloor', 'box', this.sidewalk, new pc.Vec3(0, 0.15, 0), new pc.Vec3(w, 0.3, d), mart);
     primitive(this.app, 'MartWallBack', 'box', this.cream, new pc.Vec3(0, h * 0.5, d * 0.5), new pc.Vec3(w, h, 0.4), mart);
     primitive(this.app, 'MartWallLeft', 'box', this.cream, new pc.Vec3(-w * 0.5, h * 0.5, 0), new pc.Vec3(0.4, h, d), mart);
     primitive(this.app, 'MartWallRight', 'box', this.cream, new pc.Vec3(w * 0.5, h * 0.5, 0), new pc.Vec3(0.4, h, d), mart);
 
-    // Front Entrance
     primitive(this.app, 'MartFrontL', 'box', this.martGreen, new pc.Vec3(-3.2, h * 0.5, -d * 0.5), new pc.Vec3(4.0, h, 0.4), mart);
     primitive(this.app, 'MartFrontR', 'box', this.martGreen, new pc.Vec3(3.2, h * 0.5, -d * 0.5), new pc.Vec3(4.0, h, 0.4), mart);
 
-    // Green Storefront Awning
     const awning = primitive(this.app, 'MartAwning', 'box', this.martGreen, new pc.Vec3(0, 4.4, -d * 0.5 - 1.2), new pc.Vec3(w + 0.6, 0.3, 2.6), mart);
     awning.setLocalEulerAngles(18, 0, 0);
 
-    // Grocery Aisles & Shelves
+    // Fruit Crate Display Outside
+    primitive(this.app, 'FruitCrate', 'box', this.wood, new pc.Vec3(-4.4, 0.45, -d * 0.5 - 0.8), new pc.Vec3(1.2, 0.6, 0.8), mart);
+    primitive(this.app, 'AppleInCrate', 'sphere', this.redFlower, new pc.Vec3(-4.4, 0.85, -d * 0.5 - 0.8), new pc.Vec3(0.4, 0.4, 0.4), mart);
+
+    // Aisles & Register
     for (const sx of [-2.2, 1.8]) {
       primitive(this.app, 'AisleShelf', 'box', this.whiteFlower, new pc.Vec3(sx, 1.2, 1.5), new pc.Vec3(1.2, 2.2, 4.8), mart);
-      // Colorful grocery boxes
       for (let sz = -0.5; sz <= 3.5; sz += 1.0) {
         primitive(this.app, 'CerealBox', 'box', this.redFlower, new pc.Vec3(sx - 0.4, 1.5, sz), new pc.Vec3(0.3, 0.4, 0.3), mart);
         primitive(this.app, 'JuiceBottle', 'cylinder', this.yellowFlower, new pc.Vec3(sx + 0.4, 1.5, sz), new pc.Vec3(0.2, 0.4, 0.2), mart);
       }
     }
 
-    // Checkout Counter with Scanner Register
     primitive(this.app, 'CheckoutCounter', 'box', this.wood, new pc.Vec3(0.5, 0.6, -2.0), new pc.Vec3(4.2, 1.1, 1.4), mart);
     primitive(this.app, 'CashRegister', 'box', this.metal, new pc.Vec3(0.5, 1.3, -2.0), new pc.Vec3(0.7, 0.5, 0.6), mart);
 
-    // Pitched Roof
     const roofL = primitive(this.app, 'MartRoofL', 'box', this.townBlue, new pc.Vec3(0, h + 1.1, -1.8), new pc.Vec3(w + 1.2, 0.38, 5.5), mart);
     roofL.setLocalEulerAngles(-30, 0, 0);
     const roofR = primitive(this.app, 'MartRoofR', 'box', this.townBlue, new pc.Vec3(0, h + 1.1, 1.8), new pc.Vec3(w + 1.2, 0.38, 5.5), mart);
@@ -353,30 +342,20 @@ export class WorldBuilder {
     const h = 5.8;
     const d = 9.5;
 
-    // Stone Steps & Grand Pillars
     primitive(this.app, 'HallSteps', 'box', this.warmStone, new pc.Vec3(0, 0.3, d * 0.5 + 1.2), new pc.Vec3(8.5, 0.6, 2.4), hall);
     for (const px of [-3.8, -1.3, 1.3, 3.8]) {
       primitive(this.app, 'HallPillar', 'cylinder', this.warmStone, new pc.Vec3(px, h * 0.5 + 0.3, d * 0.5 + 0.2), new pc.Vec3(0.7, h, 0.7), hall);
     }
 
-    // Walls & Floor
     primitive(this.app, 'HallFloor', 'box', this.warmStone, new pc.Vec3(0, 0.3, 0), new pc.Vec3(w, 0.6, d), hall);
     primitive(this.app, 'HallWallBack', 'box', this.cream, new pc.Vec3(0, h * 0.5 + 0.3, -d * 0.5), new pc.Vec3(w, h, 0.4), hall);
     primitive(this.app, 'HallWallLeft', 'box', this.cream, new pc.Vec3(-w * 0.5, h * 0.5 + 0.3, 0), new pc.Vec3(0.4, h, d), hall);
     primitive(this.app, 'HallWallRight', 'box', this.cream, new pc.Vec3(w * 0.5, h * 0.5 + 0.3, 0), new pc.Vec3(0.4, h, d), hall);
 
-    // Mayor Podium in the center
     primitive(this.app, 'HallPodium', 'box', this.darkWood, new pc.Vec3(0, 1.2, -2.5), new pc.Vec3(1.6, 1.6, 1.2), hall);
     primitive(this.app, 'HallMic', 'cylinder', this.metal, new pc.Vec3(0, 2.2, -2.4), new pc.Vec3(0.08, 0.4, 0.08), hall);
-
-    // Police Desk on the side
     primitive(this.app, 'PoliceDesk', 'box', this.policeNavy, new pc.Vec3(-3.4, 0.9, 1.5), new pc.Vec3(2.4, 1.1, 1.4), hall);
 
-    // Classical Pediment Triangle
-    const pediment = primitive(this.app, 'HallPediment', 'box', this.warmStone, new pc.Vec3(0, h + 1.2, d * 0.5 + 0.2), new pc.Vec3(w + 0.5, 1.6, 0.6), hall);
-    pediment.setLocalEulerAngles(0, 0, 0);
-
-    // Pitched Roof
     const roofL = primitive(this.app, 'HallRoofL', 'box', this.slateBlueMat(), new pc.Vec3(0, h + 1.5, -2.2), new pc.Vec3(w + 1.2, 0.38, 6.2), hall);
     roofL.setLocalEulerAngles(-28, 0, 0);
     const roofR = primitive(this.app, 'HallRoofR', 'box', this.slateBlueMat(), new pc.Vec3(0, h + 1.5, 2.2), new pc.Vec3(w + 1.2, 0.38, 6.2), hall);
@@ -397,18 +376,22 @@ export class WorldBuilder {
     homeRoot.setPosition(x, y, z);
     this.app.root.addChild(homeRoot);
 
-    // Driveway connecting to town
+    // Driveway & Mailbox
     primitive(this.app, 'Driveway', 'box', this.asphalt, new pc.Vec3(7.5, 0.08, -3.5), new pc.Vec3(6.5, 0.14, 4.8), homeRoot);
     primitive(this.app, 'MailboxPost', 'cylinder', this.wood, new pc.Vec3(10.2, 0.6, -5.5), new pc.Vec3(0.14, 1.2, 0.14), homeRoot);
     primitive(this.app, 'MailboxBox', 'box', this.policeNavy, new pc.Vec3(10.2, 1.2, -5.5), new pc.Vec3(0.4, 0.35, 0.6), homeRoot);
 
-    // Warm wooden plank floor
-    primitive(this.app, 'HomeFloor', 'box', this.lightWood, new pc.Vec3(0, 0.15, 0), new pc.Vec3(10.5, 0.3, 9.5), homeRoot);
+    // White Picket Fence along front yard
+    for (let fx = 2.0; fx <= 10.0; fx += 1.6) {
+      primitive(this.app, 'PicketPost', 'box', this.whiteFlower, new pc.Vec3(fx, 0.5, -6.2), new pc.Vec3(0.12, 1.0, 0.12), homeRoot);
+      primitive(this.app, 'PicketRail', 'box', this.whiteFlower, new pc.Vec3(fx - 0.8, 0.5, -6.2), new pc.Vec3(1.6, 0.08, 0.04), homeRoot);
+    }
 
-    // Cozy rug
+    // Wooden plank floor
+    primitive(this.app, 'HomeFloor', 'box', this.lightWood, new pc.Vec3(0, 0.15, 0), new pc.Vec3(10.5, 0.3, 9.5), homeRoot);
     primitive(this.app, 'HomeRug', 'box', this.terracotta, new pc.Vec3(0, 0.31, 0.5), new pc.Vec3(5.2, 0.04, 4.2), homeRoot);
 
-    // Walls with timber frame
+    // Walls & Timber posts
     const wallH = 5.2;
     primitive(this.app, 'HomeWallBack', 'box', this.cream, new pc.Vec3(0, wallH * 0.5, 4.5), new pc.Vec3(10.5, wallH, 0.4), homeRoot);
     primitive(this.app, 'HomeWallLeft', 'box', this.cream, new pc.Vec3(-5.05, wallH * 0.5, 0), new pc.Vec3(0.4, wallH, 9.5), homeRoot);
@@ -416,55 +399,41 @@ export class WorldBuilder {
     primitive(this.app, 'HomeWallFrontL', 'box', this.cream, new pc.Vec3(-3.5, wallH * 0.5, -4.5), new pc.Vec3(3.4, wallH, 0.4), homeRoot);
     primitive(this.app, 'HomeWallFrontR', 'box', this.cream, new pc.Vec3(3.5, wallH * 0.5, -4.5), new pc.Vec3(3.4, wallH, 0.4), homeRoot);
 
-    // Doorbell on front door
+    // Doorbell
     primitive(this.app, 'HomeDoorbell', 'cylinder', this.brass, new pc.Vec3(1.8, 1.4, -4.7), new pc.Vec3(0.16, 0.08, 0.16), homeRoot)
       .setLocalEulerAngles(90, 0, 0);
 
-    // Timber posts
-    for (const sx of [-5.05, 5.05]) {
-      for (const sz of [-4.5, 4.5]) {
-        primitive(this.app, 'HomeTimber', 'box', this.darkWood, new pc.Vec3(sx, wallH * 0.5, sz), new pc.Vec3(0.55, wallH, 0.55), homeRoot);
-      }
-    }
-
-    // Doorway lintel
-    primitive(this.app, 'HomeDoorLintel', 'box', this.darkWood, new pc.Vec3(0, 4.1, -4.5), new pc.Vec3(3.6, 0.45, 0.45), homeRoot);
-
-    // Pitched Roof (A-frame gable)
+    // Pitched Roof
     const roofL = primitive(this.app, 'HomeRoofFront', 'box', this.terracotta, new pc.Vec3(0, 6.1, -2.4), new pc.Vec3(11.8, 0.45, 5.8), homeRoot);
     roofL.setLocalEulerAngles(-28, 0, 0);
     const roofR = primitive(this.app, 'HomeRoofBack', 'box', this.terracotta, new pc.Vec3(0, 6.1, 2.4), new pc.Vec3(11.8, 0.45, 5.8), homeRoot);
     roofR.setLocalEulerAngles(28, 0, 0);
     primitive(this.app, 'HomeRoofRidge', 'box', this.darkWood, new pc.Vec3(0, 7.5, 0), new pc.Vec3(12.2, 0.45, 0.6), homeRoot);
 
-    // Chimney & Emitter
+    // Chimney
     primitive(this.app, 'HomeChimney', 'box', this.darkStone, new pc.Vec3(3.5, 6.2, 2.2), new pc.Vec3(1.1, 3.8, 1.1), homeRoot);
     this.chimneyEmitters.push(new pc.Vec3(x + 3.5, y + 8.1, z + 2.2));
 
-    // Bed in corner
+    // Furniture
     primitive(this.app, 'HomeBedFrame', 'box', this.darkWood, new pc.Vec3(-3.2, 0.4, 2.6), new pc.Vec3(2.6, 0.6, 3.4), homeRoot);
     primitive(this.app, 'HomeBedMattress', 'box', this.cream, new pc.Vec3(-3.2, 0.8, 2.6), new pc.Vec3(2.4, 0.4, 3.2), homeRoot);
     primitive(this.app, 'HomeBedBlanket', 'box', this.townBlue, new pc.Vec3(-3.2, 0.9, 2.1), new pc.Vec3(2.45, 0.25, 2.2), homeRoot);
     primitive(this.app, 'HomePillow', 'box', this.whiteFlower, new pc.Vec3(-3.2, 1.05, 3.7), new pc.Vec3(2.0, 0.3, 0.9), homeRoot);
 
-    // Table & Lamp
     const lampPosition = { x: x - 2.4, y: y + 1.2, z: z + 0.2 };
     primitive(this.app, 'HomeTable', 'box', this.wood, new pc.Vec3(-2.4, 0.65, 0.2), new pc.Vec3(1.6, 1.0, 1.4), homeRoot);
     primitive(this.app, 'LampBase', 'cylinder', this.brass, new pc.Vec3(-2.4, 1.2, 0.2), new pc.Vec3(0.45, 0.15, 0.45), homeRoot);
     const lampEntity = primitive(this.app, 'HomeLamp', 'sphere', this.warmGlow, new pc.Vec3(-2.4, 1.6, 0.2), new pc.Vec3(0.72, 0.72, 0.72), homeRoot);
 
-    // Living Room Sofa & TV
     const chairPosition = { x: x + 1.8, y, z: z + 1.7 };
     primitive(this.app, 'HomeSofaSeat', 'box', this.townBlue, new pc.Vec3(1.8, 0.55, 1.7), new pc.Vec3(2.4, 0.45, 1.4), homeRoot);
     primitive(this.app, 'HomeSofaBack', 'box', this.townBlue, new pc.Vec3(1.8, 1.15, 2.3), new pc.Vec3(2.4, 0.85, 0.35), homeRoot);
     primitive(this.app, 'HomeTVStand', 'box', this.darkWood, new pc.Vec3(1.8, 0.5, -2.5), new pc.Vec3(2.8, 0.7, 0.8), homeRoot);
     primitive(this.app, 'HomeFlatscreenTV', 'box', this.asphalt, new pc.Vec3(1.8, 1.4, -2.5), new pc.Vec3(2.4, 1.3, 0.12), homeRoot);
 
-    // Kitchen Refrigerator & Counter
     primitive(this.app, 'HomeFridge', 'box', this.whiteFlower, new pc.Vec3(-2.2, 1.6, 1.5), new pc.Vec3(1.3, 3.2, 1.2), homeRoot);
     primitive(this.app, 'FridgeHandle', 'cylinder', this.metal, new pc.Vec3(-1.5, 1.8, 1.9), new pc.Vec3(0.08, 0.8, 0.08), homeRoot);
 
-    // Cupboard
     const cupboardPosition = { x: x + 3.2, y, z: z + 3.2 };
     primitive(this.app, 'HomeCupboardBody', 'box', this.darkWood, new pc.Vec3(3.2, 1.8, 3.2), new pc.Vec3(2.4, 3.4, 0.9), homeRoot);
     const cupboardDoor = primitive(this.app, 'HomeCupboardDoor', 'box', this.lightWood, new pc.Vec3(3.2, 1.8, 2.7), new pc.Vec3(2.1, 3.1, 0.18), homeRoot);
@@ -474,35 +443,55 @@ export class WorldBuilder {
   }
 
   private buildCar() {
-    const root = new pc.Entity('TownMiniCar');
+    const root = new pc.Entity('TownSportsCar');
     root.setPosition(5, heightAt(5, 8) + 0.6, 8);
     this.app.root.addChild(root);
 
     const wheels: pc.Entity[] = [];
     const frontMounts: pc.Entity[] = [];
 
-    // Car Body / Chassis (Glossy Turquoise)
-    primitive(this.app, 'CarChassis', 'box', this.carTurquoise, new pc.Vec3(0, 0.45, 0), new pc.Vec3(2.4, 0.75, 4.4), root);
-    primitive(this.app, 'CarHood', 'box', this.carTurquoise, new pc.Vec3(0, 0.65, -1.2), new pc.Vec3(2.3, 0.45, 1.8), root);
+    // Sculpted Aerodynamic Body (Glossy Red Convertible)
+    primitive(this.app, 'CarLowerChassis', 'box', this.carPaint, new pc.Vec3(0, 0.38, 0), new pc.Vec3(2.3, 0.45, 4.4), root);
+    primitive(this.app, 'CarHoodSloped', 'box', this.carPaint, new pc.Vec3(0, 0.58, -1.3), new pc.Vec3(2.2, 0.35, 1.8), root);
+    primitive(this.app, 'CarRearTrunk', 'box', this.carPaint, new pc.Vec3(0, 0.62, 1.3), new pc.Vec3(2.2, 0.38, 1.8), root);
 
-    // Windshield frame & glass
-    const windshield = primitive(this.app, 'CarWindshield', 'box', this.glass, new pc.Vec3(0, 1.25, -0.4), new pc.Vec3(2.2, 0.8, 0.1), root);
-    windshield.setLocalEulerAngles(-22, 0, 0);
-
-    // Leather Interior & Steering Wheel
-    primitive(this.app, 'CarSeatL', 'box', this.carLeather, new pc.Vec3(-0.45, 0.55, 0.4), new pc.Vec3(0.8, 0.6, 0.9), root);
-    primitive(this.app, 'CarSeatR', 'box', this.carLeather, new pc.Vec3(0.45, 0.55, 0.4), new pc.Vec3(0.8, 0.6, 0.9), root);
-    const wheel = primitive(this.app, 'CarSteeringWheel', 'cylinder', this.metal, new pc.Vec3(-0.45, 0.95, -0.2), new pc.Vec3(0.42, 0.08, 0.42), root);
-    wheel.setLocalEulerAngles(65, 0, 0);
-
-    // Front Headlights
-    for (const sx of [-0.85, 0.85]) {
-      primitive(this.app, 'HeadlightBezel', 'cylinder', this.chrome, new pc.Vec3(sx, 0.65, -2.15), new pc.Vec3(0.35, 0.15, 0.35), root)
-        .setLocalEulerAngles(90, 0, 0);
-      primitive(this.app, 'HeadlightGlow', 'sphere', this.warmGlow, new pc.Vec3(sx, 0.65, -2.22), new pc.Vec3(0.26, 0.26, 0.12), root);
+    // Dual White Racing Stripes
+    for (const sx of [-0.35, 0.35]) {
+      primitive(this.app, 'RacingStripeFront', 'box', this.carStripe, new pc.Vec3(sx, 0.77, -1.3), new pc.Vec3(0.24, 0.02, 1.78), root);
+      primitive(this.app, 'RacingStripeRear', 'box', this.carStripe, new pc.Vec3(sx, 0.82, 1.3), new pc.Vec3(0.24, 0.02, 1.78), root);
     }
 
-    // 4 Wheels (Front steerable, rear fixed)
+    // Chrome Bumpers & Front Grille
+    primitive(this.app, 'FrontBumper', 'box', this.chrome, new pc.Vec3(0, 0.32, -2.25), new pc.Vec3(2.35, 0.22, 0.25), root);
+    primitive(this.app, 'FrontGrille', 'box', this.metal, new pc.Vec3(0, 0.45, -2.22), new pc.Vec3(1.5, 0.32, 0.1), root);
+    primitive(this.app, 'RearBumper', 'box', this.chrome, new pc.Vec3(0, 0.32, 2.25), new pc.Vec3(2.35, 0.22, 0.25), root);
+
+    // Curved Tinted Windshield
+    const windshield = primitive(this.app, 'CarWindshield', 'box', this.glass, new pc.Vec3(0, 1.05, -0.42), new pc.Vec3(2.1, 0.75, 0.12), root);
+    windshield.setLocalEulerAngles(-24, 0, 0);
+
+    // Dashboard & Steering Wheel
+    primitive(this.app, 'CarDashboard', 'box', this.carLeather, new pc.Vec3(0, 0.78, -0.32), new pc.Vec3(2.1, 0.35, 0.4), root);
+    const wheel = primitive(this.app, 'CarSteeringWheel', 'cylinder', this.metal, new pc.Vec3(-0.45, 0.95, -0.15), new pc.Vec3(0.42, 0.08, 0.42), root);
+    wheel.setLocalEulerAngles(65, 0, 0);
+
+    // Leather Bucket Seats with Headrests
+    for (const sx of [-0.45, 0.45]) {
+      primitive(this.app, 'SeatBase', 'box', this.carLeather, new pc.Vec3(sx, 0.52, 0.45), new pc.Vec3(0.75, 0.5, 0.85), root);
+      primitive(this.app, 'SeatBack', 'box', this.carLeather, new pc.Vec3(sx, 0.92, 0.82), new pc.Vec3(0.75, 0.65, 0.22), root);
+      primitive(this.app, 'SeatHeadrest', 'box', this.carLeather, new pc.Vec3(sx, 1.32, 0.82), new pc.Vec3(0.45, 0.25, 0.18), root);
+    }
+
+    // Chrome Headlights with Glowing Lenses & Taillights
+    for (const sx of [-0.85, 0.85]) {
+      primitive(this.app, 'HeadlightHousing', 'cylinder', this.chrome, new pc.Vec3(sx, 0.62, -2.18), new pc.Vec3(0.36, 0.15, 0.36), root)
+        .setLocalEulerAngles(90, 0, 0);
+      primitive(this.app, 'HeadlightLens', 'sphere', this.warmGlow, new pc.Vec3(sx, 0.62, -2.25), new pc.Vec3(0.28, 0.28, 0.12), root);
+      // Red Taillight
+      primitive(this.app, 'TailLight', 'box', this.tailLightGlow, new pc.Vec3(sx, 0.65, 2.22), new pc.Vec3(0.35, 0.22, 0.08), root);
+    }
+
+    // 4 Detailed Wheels with Rubber Tires & 5-Spoke Chrome Hubcaps
     const wheelOffsets = [
       { name: 'FrontL', x: -1.25, z: -1.3, isFront: true },
       { name: 'FrontR', x: 1.25, z: -1.3, isFront: true },
@@ -519,10 +508,15 @@ export class WorldBuilder {
       const pivot = new pc.Entity(`WheelPivot_${w.name}`);
       mount.addChild(pivot);
 
-      const tire = primitive(this.app, 'Tire', 'cylinder', this.darkStone, new pc.Vec3(0, 0, 0), new pc.Vec3(0.85, 0.28, 0.85), pivot);
+      // Tire Rubber
+      const tire = primitive(this.app, 'Tire', 'cylinder', this.tireRubber, new pc.Vec3(0, 0, 0), new pc.Vec3(0.85, 0.30, 0.85), pivot);
       tire.setLocalEulerAngles(0, 0, 90);
-      const hub = primitive(this.app, 'Hub', 'cylinder', this.chrome, new pc.Vec3(0, 0, 0), new pc.Vec3(0.42, 0.32, 0.42), pivot);
-      hub.setLocalEulerAngles(0, 0, 90);
+      // Chrome Rim & Hubcap
+      const rim = primitive(this.app, 'Rim', 'cylinder', this.chrome, new pc.Vec3(0, 0, 0), new pc.Vec3(0.55, 0.34, 0.55), pivot);
+      rim.setLocalEulerAngles(0, 0, 90);
+      // Center Nut
+      const nut = primitive(this.app, 'Nut', 'cylinder', this.metal, new pc.Vec3(0, 0, 0), new pc.Vec3(0.20, 0.36, 0.20), pivot);
+      nut.setLocalEulerAngles(0, 0, 90);
 
       wheels.push(pivot);
     }
@@ -537,13 +531,12 @@ export class WorldBuilder {
 
     const wheels: pc.Entity[] = [];
 
-    // Wheels
     for (const z of [-1.35, 1.35]) {
       const pivot = new pc.Entity(z < 0 ? 'BikeFrontWheelPivot' : 'BikeRearWheelPivot');
       pivot.setLocalPosition(0, 0, z);
       root.addChild(pivot);
 
-      const tire = primitive(this.app, 'Tire', 'cylinder', this.darkStone, new pc.Vec3(0, 0, 0), new pc.Vec3(1.35, 0.16, 1.35), pivot);
+      const tire = primitive(this.app, 'Tire', 'cylinder', this.tireRubber, new pc.Vec3(0, 0, 0), new pc.Vec3(1.35, 0.16, 1.35), pivot);
       tire.setLocalEulerAngles(0, 0, 90);
       const hub = primitive(this.app, 'Hub', 'cylinder', this.brass, new pc.Vec3(0, 0, 0), new pc.Vec3(0.35, 0.22, 0.35), pivot);
       hub.setLocalEulerAngles(0, 0, 90);
@@ -551,18 +544,14 @@ export class WorldBuilder {
       wheels.push(pivot);
     }
 
-    // Bike Frame Tubes (Glossy Coral)
     primitive(this.app, 'FrameBottom', 'box', this.terracotta, new pc.Vec3(0, 0.15, 0), new pc.Vec3(0.14, 0.14, 2.6), root);
     const frameSeatTube = primitive(this.app, 'SeatTube', 'box', this.terracotta, new pc.Vec3(0, 0.65, 0.25), new pc.Vec3(0.14, 1.1, 0.14), root);
     frameSeatTube.setLocalEulerAngles(-18, 0, 0);
     const frameHeadTube = primitive(this.app, 'HeadTube', 'box', this.terracotta, new pc.Vec3(0, 0.75, -1.05), new pc.Vec3(0.14, 1.3, 0.14), root);
     frameHeadTube.setLocalEulerAngles(22, 0, 0);
 
-    // Saddle & Handlebars
     primitive(this.app, 'Saddle', 'box', this.darkWood, new pc.Vec3(0, 1.18, 0.42), new pc.Vec3(0.48, 0.16, 0.65), root);
     primitive(this.app, 'Handlebars', 'box', this.metal, new pc.Vec3(0, 1.35, -0.92), new pc.Vec3(1.45, 0.12, 0.12), root);
-
-    // Front Basket
     primitive(this.app, 'Basket', 'box', this.lightWood, new pc.Vec3(0, 1.25, -1.25), new pc.Vec3(0.8, 0.5, 0.5), root);
 
     return { root, wheels };
@@ -584,7 +573,6 @@ export class WorldBuilder {
     ];
     for (const [x, z, s] of birches) this.treeBirch(x, z, s);
 
-    // Woodland Grove campsite
     const gy = heightAt(-53, -42);
     const groveRoot = new pc.Entity('WoodlandGrove');
     groveRoot.setPosition(-53, gy, -42);
@@ -597,7 +585,6 @@ export class WorldBuilder {
     primitive(this.app, 'FirePitCoals', 'cylinder', this.terracotta, new pc.Vec3(2.8, 0.35, 2.2), new pc.Vec3(1.4, 0.15, 1.4), groveRoot);
     primitive(this.app, 'FireEmberGlow', 'sphere', this.warmGlow, new pc.Vec3(2.8, 0.45, 2.2), new pc.Vec3(0.6, 0.3, 0.6), groveRoot);
 
-    // Cozy mini tent
     const tent = new pc.Entity('GroveTent');
     tent.setPosition(-56, heightAt(-56, -44), -44);
     tent.setEulerAngles(0, 40, 0);
@@ -700,35 +687,44 @@ export class WorldBuilder {
     return root;
   }
 
-  private buildDetails() {
-    // Flowerbeds along sidewalks
-    const flowerbeds = [
-      { x: 7.2, z: 8, mat: this.redFlower },
-      { x: 7.2, z: 16, mat: this.yellowFlower },
-      { x: -7.2, z: 8, mat: this.yellowFlower },
-      { x: -7.2, z: 16, mat: this.redFlower },
-      { x: 12, z: -7.2, mat: this.whiteFlower },
-      { x: 22, z: -7.2, mat: this.redFlower }
+  private buildStreetDecorations() {
+    // Beautiful Flower Planter Boxes along sidewalks
+    const planterBoxes = [
+      { x: 6.8, z: 8, mat: this.redFlower },
+      { x: 6.8, z: 16, mat: this.yellowFlower },
+      { x: -6.8, z: 8, mat: this.yellowFlower },
+      { x: -6.8, z: 16, mat: this.redFlower },
+      { x: 12, z: -6.8, mat: this.whiteFlower },
+      { x: 22, z: -6.8, mat: this.redFlower }
     ];
 
-    for (const fb of flowerbeds) {
-      const y = heightAt(fb.x, fb.z);
-      primitive(this.app, 'BedBorder', 'box', this.warmStone, new pc.Vec3(fb.x, y + 0.15, fb.z), new pc.Vec3(2.4, 0.25, 2.4));
-      primitive(this.app, 'FlowerBloom', 'sphere', fb.mat, new pc.Vec3(fb.x, y + 0.38, fb.z), new pc.Vec3(1.2, 0.3, 1.2));
+    for (const pb of planterBoxes) {
+      const y = heightAt(pb.x, pb.z);
+      // Wooden planter box container
+      primitive(this.app, 'PlanterBox', 'box', this.wood, new pc.Vec3(pb.x, y + 0.25, pb.z), new pc.Vec3(2.2, 0.45, 1.2));
+      // Soil
+      primitive(this.app, 'PlanterSoil', 'box', this.darkWood, new pc.Vec3(pb.x, y + 0.45, pb.z), new pc.Vec3(2.0, 0.10, 1.0));
+      // Colorful blooms
+      for (let fx = -0.6; fx <= 0.6; fx += 0.6) {
+        primitive(this.app, 'FlowerBloom', 'sphere', pb.mat, new pc.Vec3(pb.x + fx, y + 0.62, pb.z), new pc.Vec3(0.42, 0.35, 0.42));
+      }
     }
+
+    // Fire Hydrant on street corner
+    const hydrantY = heightAt(-5.6, 5.6);
+    const hydrant = new pc.Entity('FireHydrant');
+    hydrant.setPosition(-5.6, hydrantY, 5.6);
+    this.app.root.addChild(hydrant);
+    primitive(this.app, 'HydrantBase', 'cylinder', this.redFlower, new pc.Vec3(0, 0.35, 0), new pc.Vec3(0.38, 0.7, 0.38), hydrant);
+    primitive(this.app, 'HydrantCap', 'sphere', this.brass, new pc.Vec3(0, 0.72, 0), new pc.Vec3(0.42, 0.28, 0.42), hydrant);
   }
 
   private colliders(): Aabb2[] {
     return [
-      // Clock Tower
       { minX: -2.5, maxX: 2.5, minZ: -20.5, maxZ: -15.5 },
-      // Town Cafe
       { minX: 13, maxX: 23, minZ: 7.5, maxZ: 16.5 },
-      // Supermarket
       { minX: -23.5, maxX: -12.5, minZ: 7.5, maxZ: 16.5 },
-      // Town Hall
       { minX: 12, maxX: 24, minZ: -21, maxZ: -11 },
-      // Suburban House Walls
       { minX: -44, maxX: -34, minZ: 35.1, maxZ: 35.6 },
       { minX: -44, maxX: -43.5, minZ: 26.5, maxZ: 35.5 },
       { minX: -34.5, maxX: -34, minZ: 26.5, maxZ: 35.5 },
