@@ -8,11 +8,14 @@ The V0.1 target is a compact, authored world that is fun before missions exist: 
 
 ## Architecture
 
+See [ARCHITECTURE.md](file:///ARCHITECTURE.md) for the complete design blueprint and system boundaries.
+
 - TypeScript + Vite + standalone PlayCanvas Engine
 - Cloudflare Workers Static Assets + Worker + D1
 - Google Identity Services for production sign-in
 - one web/PWA codebase; no Android gameplay fork
 - no R2 or Durable Objects in V0.1
+
 
 ## Local development
 
