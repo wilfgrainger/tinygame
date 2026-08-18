@@ -574,9 +574,10 @@ kbd {
   to { opacity: 1; transform: scale(1.3); }
 }
 
-/* Fine pointer adjustments */
-@media (pointer: fine) {
+/* Desktop Large Screens Only: hide touch joystick when on full-size mouse display */
+@media (min-width: 961px) and (pointer: fine) {
   .move-pad, .look-pad, .action-button.jump {
     display: none;
   }
 }
+
