@@ -3,6 +3,7 @@ import type { InputFrame } from '../input/InputState';
 import type { CollisionWorld } from './CollisionWorld';
 import type { WaterSystem } from '../water/WaterSystem';
 import { applyCameraLook, cameraRelativeMove } from './controlModel';
+import { applyRadialDeadzone, approachMagnitude } from './movementFeel';
 
 export type PlayerMode = 'grounded' | 'airborne' | 'swimming' | 'bike' | 'raft' | 'car';
 export type PlayerSnapshot = { position: Vec3; yaw: number; pitch: number; verticalVelocity: number; mode: PlayerMode };
@@ -12,14 +13,21 @@ export class PlayerController {
   readonly walkSpeed = 6;
   readonly swimSpeed = 3.6;
   private state: PlayerSnapshot;
+  private moveMagnitude = 0;
 
   constructor(private readonly collision: CollisionWorld, private readonly water: WaterSystem, spawn: Vec3, spawnYaw = 0) {
     this.state = { position: { ...spawn, y: collision.heightAt(spawn.x, spawn.z) }, yaw: spawnYaw, pitch: -18, verticalVelocity: 0, mode: 'grounded' };
   }
 
   get snapshot(): PlayerSnapshot { return { ...this.state, position: { ...this.state.position } }; }
-  setExternal(position: Vec3, yaw: number, mode: 'bike' | 'raft' | 'car') { this.state = { ...this.state, position: { ...position }, yaw, mode, verticalVelocity: 0 }; }
-  resumeGrounded(position: Vec3) { this.state = { ...this.state, position: { ...position, y: this.collision.heightAt(position.x, position.z) }, mode: 'grounded', verticalVelocity: 0 }; }
+  setExternal(position: Vec3, yaw: number, mode: 'bike' | 'raft' | 'car') {
+    this.moveMagnitude = 0;
+    this.state = { ...this.state, position: { ...position }, yaw, mode, verticalVelocity: 0 };
+  }
+  resumeGrounded(position: Vec3) {
+    this.moveMagnitude = 0;
+    this.state = { ...this.state, position: { ...position, y: this.collision.heightAt(position.x, position.z) }, mode: 'grounded', verticalVelocity: 0 };
+  }
 
   update(dt: number, input: InputFrame): PlayerSnapshot {
     if (this.state.mode === 'bike' || this.state.mode === 'raft' || this.state.mode === 'car') return this.snapshot;
@@ -41,9 +49,13 @@ export class PlayerController {
     else if (this.state.mode === 'swimming') this.state.mode = 'grounded';
 
     const speed = this.state.mode === 'swimming' ? this.swimSpeed : this.walkSpeed;
-    const move = cameraRelativeMove(input.moveX, input.moveY, this.state.yaw);
-    const dx = move.x * speed * capped;
-    const dz = move.z * speed * capped;
+    const shaped = applyRadialDeadzone(input.moveX, input.moveY);
+    this.moveMagnitude = approachMagnitude(this.moveMagnitude, shaped.magnitude, capped, 12, 18);
+    const move = shaped.magnitude > 0
+      ? cameraRelativeMove(shaped.x / shaped.magnitude, shaped.y / shaped.magnitude, this.state.yaw)
+      : { x: 0, z: 0 };
+    const dx = move.x * this.moveMagnitude * speed * capped;
+    const dz = move.z * this.moveMagnitude * speed * capped;
     let next = this.collision.resolveMove(this.state.position, { x: dx, y: 0, z: dz }, this.radius);
 
     if (this.state.mode === 'swimming') {
