@@ -2,6 +2,7 @@ import type { Vec3 } from '../../shared/world';
 import type { InputFrame } from '../input/InputState';
 import type { CollisionWorld } from './CollisionWorld';
 import type { WaterSystem } from '../water/WaterSystem';
+import { applyCameraLook, cameraRelativeMove } from './controlModel';
 
 export type PlayerMode = 'grounded' | 'airborne' | 'swimming' | 'bike' | 'raft' | 'car';
 export type PlayerSnapshot = { position: Vec3; yaw: number; pitch: number; verticalVelocity: number; mode: PlayerMode };
@@ -23,16 +24,26 @@ export class PlayerController {
   update(dt: number, input: InputFrame): PlayerSnapshot {
     if (this.state.mode === 'bike' || this.state.mode === 'raft' || this.state.mode === 'car') return this.snapshot;
     const capped = Math.min(dt, 1 / 20);
-    this.state.yaw -= input.lookX * 0.0035;
-    this.state.pitch = Math.max(-55, Math.min(20, this.state.pitch - input.lookY * 0.18));
+
+    // Camera heading is intentionally independent from avatar visual facing.
+    // Right-drag only changes this movement/camera basis; PlayerView turns the
+    // avatar toward the actual travel vector.
+    const camera = applyCameraLook(
+      { yaw: this.state.yaw, pitch: this.state.pitch },
+      input.lookX,
+      input.lookY
+    );
+    this.state.yaw = camera.yaw;
+    this.state.pitch = camera.pitch;
+
     const inWater = this.water.contains(this.state.position.x, this.state.position.z);
     if (inWater) this.state.mode = 'swimming';
     else if (this.state.mode === 'swimming') this.state.mode = 'grounded';
 
     const speed = this.state.mode === 'swimming' ? this.swimSpeed : this.walkSpeed;
-    const sin = Math.sin(this.state.yaw); const cos = Math.cos(this.state.yaw);
-    const dx = (input.moveX * cos + input.moveY * sin) * speed * capped;
-    const dz = (-input.moveY * cos + input.moveX * sin) * speed * capped;
+    const move = cameraRelativeMove(input.moveX, input.moveY, this.state.yaw);
+    const dx = move.x * speed * capped;
+    const dz = move.z * speed * capped;
     let next = this.collision.resolveMove(this.state.position, { x: dx, y: 0, z: dz }, this.radius);
 
     if (this.state.mode === 'swimming') {
