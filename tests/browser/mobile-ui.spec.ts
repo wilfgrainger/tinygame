@@ -28,12 +28,6 @@ async function openAuthenticatedGame(page: Page) {
   await expect(page.locator('#game-canvas')).toBeVisible({ timeout: 15_000 });
 }
 
-function offsetFromTransform(transform: string) {
-  if (transform === 'none') return { x: 0, y: 0 };
-  const matrix = new DOMMatrixReadOnly(transform);
-  return { x: matrix.m41, y: matrix.m42 };
-}
-
 test('Android landscape keeps touch controls inside the viewport', async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes('android'), 'mobile project only');
   await openAuthenticatedGame(page);
@@ -63,20 +57,24 @@ test('focus loss clears an active movement stick so movement cannot become phant
   await page.mouse.down();
   await page.mouse.move(centreX + 30, centreY - 12);
 
-  const movedTransform = await knob.evaluate((element) => getComputedStyle(element).transform);
-  const moved = offsetFromTransform(movedTransform);
-  expect(Math.hypot(moved.x, moved.y)).toBeGreaterThan(10);
+  const movedMagnitude = await knob.evaluate((element) => {
+    const transform = getComputedStyle(element).transform;
+    if (transform === 'none') return 0;
+    const matrix = new DOMMatrixReadOnly(transform);
+    return Math.hypot(matrix.m41, matrix.m42);
+  });
+  expect(movedMagnitude).toBeGreaterThan(10);
 
-  const afterBlur = await page.evaluate(() => {
+  const afterBlurMagnitude = await page.evaluate(() => {
     window.dispatchEvent(new Event('blur'));
     const element = document.querySelector('.move-pad .stick-knob');
     if (!element) throw new Error('movement knob missing');
     const transform = getComputedStyle(element).transform;
-    if (transform === 'none') return { x: 0, y: 0 };
+    if (transform === 'none') return 0;
     const matrix = new DOMMatrixReadOnly(transform);
-    return { x: matrix.m41, y: matrix.m42 };
+    return Math.hypot(matrix.m41, matrix.m42);
   });
 
-  expect(Math.hypot(afterBlur.x, afterBlur.y)).toBeLessThan(0.1);
+  expect(afterBlurMagnitude).toBeLessThan(0.1);
   await page.mouse.up();
 });
