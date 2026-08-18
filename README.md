@@ -1,38 +1,67 @@
 # TinyWorld Web
 
-Mobile-first TinyWorld rebuilt as a browser-native 3D game and installable Android PWA.
+TinyWorld is a mobile-first browser-native 3D game and installable Android PWA.
 
-## V0.1
+> **Build your life. Explore impossible worlds. Discover the secrets of TinyWorld.**
 
-The V0.1 target is a compact, authored world that is fun before missions exist: Village Square, Home Lane, Woodland, Mountain Rise and Harbour; touch-first movement; swimming; a real Tiny Bike; Tiny Raft; a small persistent home interaction; Google sign-in; Cloudflare D1 persistence.
+For V0.1, the target is deliberately smaller: open the game on a phone and immediately enjoy being in a compact, authored world with satisfying movement, exploration, swimming, a real Tiny Bike, Tiny Raft and a small persistent home interaction.
 
-## Architecture
+## Start here
 
-See [ARCHITECTURE.md](file:///ARCHITECTURE.md) for the complete design blueprint and system boundaries.
+- [VISION.md](VISION.md) — product promise, design DNA, V0.1 quality bar and long-term direction.
+- [progress.md](progress.md) — current branch/candidate state, blockers and exact next actions.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — implemented technical architecture and engineering invariants.
+- [AGENTS.md](AGENTS.md) — hard rules for Codex/agent sessions.
+- [V0.1 acceptance](docs/quality/v0.1-android-acceptance.md) — exact-build Android and family release evidence.
 
-- TypeScript + Vite + standalone PlayCanvas Engine
+## V0.1 core
+
+Release-critical:
+
+- Android-first landscape touch controls;
+- compact authored Village Square, Home Lane, Woodland, Mountain Rise and Harbour;
+- meaningful terrain and routes;
+- third-person movement, jump and camera control;
+- swimming and safe shore recovery;
+- direct-control Tiny Bike;
+- direct-control Tiny Raft;
+- player home with one small server-persisted interaction;
+- Google sign-in;
+- Cloudflare D1 persistence;
+- installable PWA;
+- visible build/release identity;
+- real Android + family acceptance.
+
+The branch also contains extra roleplay texture including NPCs, shops, props, emotes, roles, music and a mini-car. These are **non-core V0.1 extras**. The repo is feature-frozen until core acceptance passes.
+
+## Stack
+
+- TypeScript + Vite
+- standalone PlayCanvas Engine
 - Cloudflare Workers Static Assets + Worker + D1
-- Google Identity Services for production sign-in
-- one web/PWA codebase; no Android gameplay fork
+- Google Identity Services
+- Vitest + Playwright
+- one web/PWA client; no Android gameplay fork
 - no R2 or Durable Objects in V0.1
-
 
 ## Local development
 
-Node 24 is required. Copy the two committed templates, put the same public Google Web client ID in both, and replace the local pepper/salt values with long random strings:
+Node 24 is required.
 
 ```bash
 cp .env.example .env.local
 cp .dev.vars.example .dev.vars
-npm install
+npm ci
 npm run dev
 ```
 
-`npm run dev` applies local D1 migrations and starts both services:
+Put the same public Google Web client ID in `.env.local` and `.dev.vars`. Replace local pepper/salt placeholders with separate long random values.
 
-- Vite client: `http://127.0.0.1:5173`
-- Wrangler Worker/D1: `http://127.0.0.1:8787`
-- Vite proxies `/api/*` to Wrangler, so the browser uses one origin.
+`npm run dev` applies local D1 migrations and starts:
+
+- client: `http://127.0.0.1:5173`
+- Worker/D1: `http://127.0.0.1:8787`
+- `/api/*` proxied from Vite to Wrangler for one-origin local play.
 
 Verification:
 
@@ -41,22 +70,11 @@ npm run ci
 npm run test:browser
 ```
 
-`progress.md` is the durable handoff across implementation sessions. Read it before working and update it before finishing.
+## DEV deployment
 
-## Google OAuth setup for DEV
+The current development environment uses a separate `tinygame-dev` D1 database and Worker configuration. Never guess or hand-edit a D1 UUID.
 
-Create a **Web application** OAuth client in Google Cloud. Add these Authorized JavaScript origins:
-
-```text
-http://127.0.0.1:5173
-https://<your-final-tinygame-dev-worker-hostname>
-```
-
-Google client IDs are public identifiers. Never put an OAuth client secret into the browser or repository.
-
-## Cloudflare DEV setup
-
-V0.1 targets DEV only. Create the Western Europe D1 database and capture Cloudflare's real UUID:
+Create/configure a new DEV database only when required:
 
 ```bash
 npx wrangler d1 create tinygame-dev --location weur
@@ -64,40 +82,49 @@ npx wrangler d1 info tinygame-dev --json > tinygame-dev-d1.json
 node scripts/configure-d1-env.mjs dev tinygame-dev-d1.json
 ```
 
-That generates `wrangler.dev.jsonc` with the real D1 binding. Review it and commit it to the implementation branch before accepting the candidate.
+Required Worker secrets/values:
 
-Configure the required Worker values against that config:
-
-```bash
-npx wrangler secret put GOOGLE_CLIENT_ID --config wrangler.dev.jsonc
-npx wrangler secret put ALLOWED_ORIGIN --config wrangler.dev.jsonc
-npx wrangler secret put SESSION_PEPPER --config wrangler.dev.jsonc
-npx wrangler secret put AUTH_RATE_LIMIT_SALT --config wrangler.dev.jsonc
+```text
+GOOGLE_CLIENT_ID
+ALLOWED_ORIGIN
+SESSION_PEPPER
+AUTH_RATE_LIMIT_SALT
 ```
 
-Use the Google Web client ID for `GOOGLE_CLIENT_ID`, the exact final DEV HTTPS origin for `ALLOWED_ORIGIN`, and separate long random values for the pepper and salt.
-
-Apply the remote migration and deploy the exact candidate:
+Apply migrations and deploy the exact candidate:
 
 ```bash
 npx wrangler d1 migrations apply tinygame-dev --remote --config wrangler.dev.jsonc
-VITE_GOOGLE_CLIENT_ID="<same-public-google-client-id>" TINY_ENV=dev npm run build
+VITE_GOOGLE_CLIENT_ID="<public-google-client-id>" TINY_ENV=dev npm run build
 npx wrangler deploy --config wrangler.dev.jsonc
 ```
 
-Cloudflare's current Wrangler supports custom config files and remote D1 migrations; do not hand-edit a guessed database UUID.
+## Google OAuth
 
-## DEV and LIVE separation
+Use a Google **Web application** OAuth client. Authorized JavaScript origins must include the local Vite origin and the final DEV HTTPS origin being tested.
 
-DEV and LIVE must use different D1 databases, Google OAuth origins/client configuration and Worker secrets. LIVE is never generated or deployed automatically. A future LIVE promotion starts by creating `tinygame-live` and generating a separate `wrangler.live.jsonc`.
+The Google client ID is public. Do not put an OAuth client secret in the browser or repository.
 
-## Release acceptance
+## Environment separation
 
-Automated checks do not prove gameplay quality. The exact candidate must record both:
+DEV and LIVE must use distinct:
+
+- D1 databases;
+- Worker configuration/secrets;
+- allowed origins;
+- release evidence.
+
+LIVE promotion is a separate future step. Never turn DEV configuration into LIVE by renaming it.
+
+## Release rule
+
+Green CI is necessary but insufficient.
+
+The exact deployed candidate must record both:
 
 ```text
 ANDROID ACCEPTANCE: PASS
 FAMILY ACCEPTANCE: PASS
 ```
 
-in `docs/quality/v0.1-android-acceptance.md` before issue #1 can close. A failed or unobserved human check remains release-blocking even when CI is green.
+in `docs/quality/v0.1-android-acceptance.md` before V0.1 is accepted.
