@@ -4,17 +4,18 @@
 **Implementation PR:** #2  
 **Implementation branch:** `feat/v0.1-mobile-pwa`  
 **Plan:** `docs/superpowers/plans/2026-08-17-tinyworld-web-v0.1.md`  
-**Last updated:** 2026-08-18 12:11 Europe/London
+**Last updated:** 2026-08-18 12:18 Europe/London
 
 ## Session handoff
 
 TinyWorld is being rebuilt as a mobile-first browser/PWA game in `wilfgrainger/tinygame`. The Roblox repository is historical only. This file is the durable cross-session handoff: every implementation session must read it first and update it before finishing.
 
-The code-owned V0.1 vertical slice with the mobile-first Brookhaven open-town roleplay overhaul, forward character mesh orientation, arrow keys, and always-visible mobile touch controls is on PR #2 (`fc9a6af`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured. 
+The code-owned V0.1 vertical slice with the mobile-first Brookhaven open-town roleplay overhaul, forward character mesh orientation, arrow keys, and verified mobile touch controls is on PR #2 (`937a118`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured. 
 
-- **Current Candidate SHA**: `fc9a6afd38be421760ee4a5c18183b1c3c2c721a`
+- **Current Candidate SHA**: `937a11866f1c4e650ea9591461ff7d7045ce56b7`
 - **PR**: PR #2 (`feat/v0.1-mobile-pwa` -> `main`)
 - **Live DEV Endpoint**: `https://tinygame-dev.zerobytemode.workers.dev`
+
 
 
 
