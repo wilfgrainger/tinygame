@@ -12,15 +12,27 @@ TinyWorld is being rebuilt as a mobile-first browser/PWA game in `wilfgrainger/t
 
 The code-owned V0.1 vertical slice is on PR #2 (`ea8bd9e`). The Cloudflare `tinygame-dev` D1 database and Worker are fully provisioned, migrated, and deployed at `https://tinygame-dev.zerobytemode.workers.dev` with Google OAuth Client ID and session secrets configured. 
 
-The visual, audio, and gameplay polish overhaul has been implemented:
-- **Zero-byte procedural Web Audio engine (`SoundFx.ts`)**: Footsteps across terrain surfaces, bicycle bell "ding-ding!", water splash & crawl strokes, jumping, landing squash thuds, lamp switches, cupboard clicks, and pentatonic discovery fanfares.
-- **Natural Biome & Path Terrain (`meshFactory.ts`)**: 64x64 undulating terrain mesh with vertex-colored blending for sand/dirt village paths, woodland moss, rocky scree, golden beach, and meadow grass.
-- **Atmospheric Horizon & Particle Effects (`Atmosphere.ts`)**: Distance depth fog matching clear color, drifting low-poly fluffy clouds, stone chimney smoke particle emitters, village fountain spray, and animated 3D floating interaction markers.
-- **Detailed Village Architecture & Props (`WorldBuilder.ts`)**: Plastered village buildings with timber posts, glowing window frames with flowerboxes, stone chimneys, two-tier village fountain with lily pads, wooden benches, birch/pine/oak tree varieties, forest clearing tent & campfire, summit flagpole & overlook, and harbour dock crates & barrels.
-- **Procedural Explorer Character & Animation (`PlayerView.ts`)**: Adorable Explorer character (cap with brim, goggles band, eyes with specular highlights, blush cheeks, leather backpack with bedroll) with dynamic walk/run gait, body bob, arm swing, turn banking, landing squash-and-stretch, bike pedaling kinematics, and prone swimming crawl.
-- **Polished Glassmorphism HUD (`Hud.ts`, `styles.css`)**: Frosted virtual joystick, jump & action buttons, animated celebratory Discovery Banner, and cloud save status indicator.
+- **Current Candidate SHA**: `3bf21fb5d91f1da347b5cc5882bd0d7f36846d4b`
+- **PR**: PR #2 (`feat/v0.1-mobile-pwa` -> `main`)
+- **Live DEV Endpoint**: `https://tinygame-dev.zerobytemode.workers.dev`
 
-All automated prerequisite tests pass (26/26 unit & worker tests, 13/13 browser tests, source contract, and dist budget). The candidate is awaiting real Android device route testing and uninstructed family gameplay acceptance.
+## Work Completed
+1. **Zero-Byte Procedural Web Audio Engine**: Synthesizes footsteps, bicycle bells, water swimming/splash, jumps, landing impacts, discovery fanfares, espresso steam, cash register barcode scanner, car horns, doorbells, and light switches.
+2. **Atmospheric Environment & Shaders**: Linear depth fog, procedural moving cumulus clouds, chimney smoke particles, fountain droplets, and floating interaction markers.
+3. **Procedural Explorer Character Model**: Anatomical proportions, walking/running gait with dynamic head/torso sway, turn banking, landing squash, pedaling on bike, car driving pose, and swimming breaststroke crawl.
+4. **Brookhaven-Style Open Town & Roleplay Infrastructure**:
+   - Paved asphalt roads with dashed white centerlines, curbs, sidewalks, and crosswalks.
+   - Town Square with 4-faced Clock Tower and central Tiered Fountain.
+   - Enterable Town Cafe ("Bean & Berry") with espresso counter (*"brew coffee"* trigger), pastry case, and dining tables.
+   - Enterable Supermarket ("Fresh Mart") with grocery aisles and checkout register (*"barcode scanner"* trigger).
+   - Enterable Town Hall & Police Station with mayor's podium (*"speech"* trigger).
+   - Suburban Estate with driveway, mailbox, doorbell (*"ding-dong"*), living room sofa, kitchen fridge (*"grab ice cream"*), and bedroom with server-synced lamp.
+5. **Roleplay Handheld Props & Vehicles**:
+   - Quick Props Drawer in HUD: Coffee mug, Strawberry Ice Cream cone, Flashlight (with real-time forward spotlight cone), and buoyant Red Balloon (keys `1`-`4`, `0`).
+   - Drivable 4-wheeled convertible mini-car with throttle, reverse, steering wheel turning, spinning wheels, and horn button (key `H`).
+   - Town cruiser bicycle and harbour raft.
+6. **Glassmorphism HUD & Notifications**: Top props pill drawer, virtual joystick, dynamic context-sensitive action button, horn button, celebratory discovery banners, and save state indicator.
+7. **CI & Verification**: 28/28 unit and worker tests passing, 13/13 Playwright browser tests passing, locked dependencies, zero GitHub Actions artifact storage quota usage.
 
 ## Constraints
 
