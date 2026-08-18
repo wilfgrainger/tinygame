@@ -10,6 +10,7 @@ export class Hud {
   readonly hornButton = document.createElement('button');
   readonly propsButton = document.createElement('button');
   readonly propsDock = document.createElement('div');
+  readonly controlsOverlay = document.createElement('div');
   private readonly toast = document.createElement('div');
   private readonly discoveryBanner = document.createElement('div');
   private readonly saveState = document.createElement('div');
@@ -26,7 +27,7 @@ export class Hud {
     this.movePad.className = 'move-pad';
     this.movePad.innerHTML = '<span class="stick-ring"></span><span class="stick-knob"></span>';
 
-    // Look Area (Right screen half)
+    // Look Area
     this.lookPad.className = 'look-pad';
 
     // Jump & Horn Controls
@@ -41,7 +42,7 @@ export class Hud {
     this.hornButton.innerHTML = '📢 <span class="btn-text">Horn</span>';
     this.hornButton.hidden = true;
 
-    // Top Navigation & Props Dock
+    // Top Bar
     const topBar = document.createElement('div');
     topBar.className = 'top-bar';
 
@@ -52,7 +53,15 @@ export class Hud {
       this.propsDock.classList.toggle('open');
     });
 
-    topBar.append(this.propsButton);
+    const controlsToggle = document.createElement('button');
+    controlsToggle.className = 'top-pill-btn';
+    controlsToggle.innerHTML = '⌨️ <span class="pill-text">Keys</span>';
+    controlsToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.controlsOverlay.classList.toggle('hidden');
+    });
+
+    topBar.append(this.propsButton, controlsToggle);
 
     // Horizontal Floating Props Dock
     this.propsDock.className = 'props-dock';
@@ -78,6 +87,30 @@ export class Hud {
       this.propsDock.append(btn);
     }
 
+    // On-Screen Keyboard Controls Overlay
+    this.controlsOverlay.className = 'keyboard-controls-card';
+    this.controlsOverlay.innerHTML = `
+      <div class="controls-header">
+        <span class="controls-title">⌨️ Keyboard Controls</span>
+        <button class="controls-close" aria-label="Close">✕</button>
+      </div>
+      <div class="controls-grid">
+        <div class="control-row"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Move / Steer</span></div>
+        <div class="control-row"><kbd>Space</kbd><span>Jump</span></div>
+        <div class="control-row"><kbd>E</kbd><span>Action / Drive / Sit</span></div>
+        <div class="control-row"><kbd>H</kbd><span>Car Horn</span></div>
+        <div class="control-row"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd><span>☕ 🍦 🔦 🎈 Props</span></div>
+        <div class="control-row"><kbd>0</kbd><span>Put away prop</span></div>
+        <div class="control-row"><kbd>Mouse Drag</kbd><span>Orbit Camera</span></div>
+      </div>
+    `;
+
+    const closeBtn = this.controlsOverlay.querySelector('.controls-close');
+    closeBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.controlsOverlay.classList.add('hidden');
+    });
+
     this.toast.className = 'toast';
     this.toast.hidden = true;
 
@@ -94,6 +127,7 @@ export class Hud {
       stamp,
       topBar,
       this.propsDock,
+      this.controlsOverlay,
       this.lookPad,
       this.movePad,
       this.jumpButton,

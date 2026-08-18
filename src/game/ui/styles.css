@@ -225,6 +225,97 @@ body {
   display: none;
 }
 
+/* Keyboard Controls Card Overlay */
+.keyboard-controls-card {
+  pointer-events: auto;
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left));
+  top: max(88px, calc(env(safe-area-inset-top) + 78px));
+  width: 250px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(20, 32, 24, 0.82);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  color: #e6f2e8;
+  font-size: 12px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+}
+
+.keyboard-controls-card.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.95);
+  display: none;
+}
+
+.controls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.controls-title {
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #f7d27e;
+  letter-spacing: 0.2px;
+}
+
+.controls-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.controls-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.controls-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.control-row span {
+  margin-left: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  font-size: 11.5px;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  font: 700 10.5px monospace;
+  color: #1a2a1f;
+  background: linear-gradient(to bottom, #ffffff 0%, #dbe7da 100%);
+  border-radius: 5px;
+  box-shadow: 0 2px 0 #8ca58a, 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 /* Look Area */
 .look-pad {
   pointer-events: auto;
