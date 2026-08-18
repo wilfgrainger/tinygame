@@ -1,10 +1,10 @@
 import * as pc from 'playcanvas';
 import { material, primitive } from './meshFactory';
+import { FixedPool } from './particlePool';
 import { QualityScenery } from './QualityScenery';
 
 export type Particle = {
   entity: pc.Entity;
-  basePos: pc.Vec3;
   life: number;
   maxLife: number;
   velocity: pc.Vec3;
@@ -13,9 +13,12 @@ export type Particle = {
 
 export class Atmosphere {
   private clouds: pc.Entity[] = [];
-  private smokeParticles: Particle[] = [];
-  private fountainParticles: Particle[] = [];
+  private readonly smokePool: FixedPool<Particle>;
+  private readonly fountainPool: FixedPool<Particle>;
   private interactionMarker: pc.Entity;
+  private smokeSpawnCooldown = 0;
+  private fountainSpawnCooldown = 0;
+  private chimneyCursor = 0;
   private cloudMat = material(new pc.Color(0.98, 0.98, 1.0), 0.05, 0, 0.88);
   private smokeMat = material(new pc.Color(0.92, 0.92, 0.94), 0.05, 0, 0.45);
   private waterDropMat = material(new pc.Color(0.65, 0.88, 0.98), 0.9, 0.1, 0.75);
@@ -30,6 +33,21 @@ export class Atmosphere {
     new QualityScenery(app).build();
     this.spawnClouds();
     this.interactionMarker = this.createInteractionMarker();
+    this.smokePool = new FixedPool(18, (index) => this.createPooledParticle(`SmokePuff${index}`, this.smokeMat, 0.4));
+    this.fountainPool = new FixedPool(12, (index) => this.createPooledParticle(`WaterDrop${index}`, this.waterDropMat, 0.18));
+  }
+
+  private createPooledParticle(name: string, mat: pc.Material, scale: number): Particle {
+    const entity = primitive(
+      this.app,
+      name,
+      'sphere',
+      mat,
+      new pc.Vec3(0, -1000, 0),
+      new pc.Vec3(scale, scale, scale)
+    );
+    entity.enabled = false;
+    return { entity, life: 0, maxLife: 1, velocity: new pc.Vec3(), initialScale: scale };
   }
 
   private spawnClouds() {
@@ -95,38 +113,39 @@ export class Atmosphere {
   }
 
   addChimneySmoke(emitterPos: pc.Vec3) {
-    if (this.smokeParticles.length > 20) return;
-    const entity = primitive(this.app, 'SmokePuff', 'sphere', this.smokeMat, emitterPos, new pc.Vec3(0.4, 0.4, 0.4));
-    this.smokeParticles.push({
-      entity,
-      basePos: emitterPos.clone(),
-      life: 0,
-      maxLife: 3.2,
-      velocity: new pc.Vec3((Math.random() - 0.5) * 0.3 + 0.2, 0.9 + Math.random() * 0.4, (Math.random() - 0.5) * 0.3),
-      initialScale: 0.4 + Math.random() * 0.2
-    });
+    const particle = this.smokePool.acquire();
+    if (!particle) return;
+    particle.life = 0;
+    particle.maxLife = 3.2;
+    particle.initialScale = 0.4 + Math.random() * 0.2;
+    particle.velocity.set(
+      (Math.random() - 0.5) * 0.3 + 0.2,
+      0.9 + Math.random() * 0.4,
+      (Math.random() - 0.5) * 0.3
+    );
+    particle.entity.setPosition(emitterPos.x, emitterPos.y, emitterPos.z);
+    particle.entity.setLocalScale(particle.initialScale, particle.initialScale, particle.initialScale);
+    particle.entity.enabled = true;
   }
 
   addFountainSpray(fountainPos: pc.Vec3) {
-    if (this.fountainParticles.length > 15) return;
+    const particle = this.fountainPool.acquire();
+    if (!particle) return;
     const angle = Math.random() * Math.PI * 2;
     const speed = 0.5 + Math.random() * 0.4;
-    const entity = primitive(
-      this.app,
-      'WaterDrop',
-      'sphere',
-      this.waterDropMat,
-      new pc.Vec3(fountainPos.x, fountainPos.y + 1.2, fountainPos.z),
-      new pc.Vec3(0.18, 0.18, 0.18)
-    );
-    this.fountainParticles.push({
-      entity,
-      basePos: new pc.Vec3(fountainPos.x, fountainPos.y + 1.2, fountainPos.z),
-      life: 0,
-      maxLife: 1.1,
-      velocity: new pc.Vec3(Math.cos(angle) * speed, 2.2 + Math.random() * 0.6, Math.sin(angle) * speed),
-      initialScale: 0.18
-    });
+    particle.life = 0;
+    particle.maxLife = 1.1;
+    particle.initialScale = 0.18;
+    particle.velocity.set(Math.cos(angle) * speed, 2.2 + Math.random() * 0.6, Math.sin(angle) * speed);
+    particle.entity.setPosition(fountainPos.x, fountainPos.y + 1.2, fountainPos.z);
+    particle.entity.setLocalScale(0.18, 0.18, 0.18);
+    particle.entity.enabled = true;
+  }
+
+  private releaseParticle(pool: FixedPool<Particle>, particle: Particle) {
+    particle.entity.enabled = false;
+    particle.life = 0;
+    pool.release(particle);
   }
 
   update(dt: number, time: number, chimneyEmitters: pc.Vec3[], fountainEmitter?: pc.Vec3) {
@@ -138,40 +157,52 @@ export class Atmosphere {
       cloud.setPosition(nx, pos.y + Math.sin(time * 0.4 + pos.z) * 0.02, pos.z);
     }
 
-    if (Math.random() < 0.25) {
-      for (const emitter of chimneyEmitters) this.addChimneySmoke(emitter);
+    this.smokeSpawnCooldown -= dt;
+    if (chimneyEmitters.length > 0 && this.smokeSpawnCooldown <= 0) {
+      const emitter = chimneyEmitters[this.chimneyCursor % chimneyEmitters.length]!;
+      this.chimneyCursor += 1;
+      this.addChimneySmoke(emitter);
+      this.smokeSpawnCooldown = 0.22;
     }
 
-    if (fountainEmitter && Math.random() < 0.6) this.addFountainSpray(fountainEmitter);
-
-    for (let i = this.smokeParticles.length - 1; i >= 0; i -= 1) {
-      const p = this.smokeParticles[i]!;
-      p.life += dt;
-      if (p.life >= p.maxLife) {
-        p.entity.destroy();
-        this.smokeParticles.splice(i, 1);
-        continue;
-      }
-      const progress = p.life / p.maxLife;
-      const curPos = p.entity.getPosition();
-      curPos.add(new pc.Vec3(p.velocity.x * dt, p.velocity.y * dt, p.velocity.z * dt));
-      p.entity.setPosition(curPos);
-      const scale = p.initialScale * (1 + progress * 2.8);
-      p.entity.setLocalScale(scale, scale, scale);
+    this.fountainSpawnCooldown -= dt;
+    if (fountainEmitter && this.fountainSpawnCooldown <= 0) {
+      this.addFountainSpray(fountainEmitter);
+      this.fountainSpawnCooldown = 0.12;
     }
 
-    for (let i = this.fountainParticles.length - 1; i >= 0; i -= 1) {
-      const p = this.fountainParticles[i]!;
-      p.life += dt;
-      if (p.life >= p.maxLife) {
-        p.entity.destroy();
-        this.fountainParticles.splice(i, 1);
+    for (const particle of this.smokePool.items) {
+      if (!this.smokePool.isActive(particle)) continue;
+      particle.life += dt;
+      if (particle.life >= particle.maxLife) {
+        this.releaseParticle(this.smokePool, particle);
         continue;
       }
-      p.velocity.y -= 5.5 * dt;
-      const curPos = p.entity.getPosition();
-      curPos.add(new pc.Vec3(p.velocity.x * dt, p.velocity.y * dt, p.velocity.z * dt));
-      p.entity.setPosition(curPos);
+      const progress = particle.life / particle.maxLife;
+      const pos = particle.entity.getPosition();
+      particle.entity.setPosition(
+        pos.x + particle.velocity.x * dt,
+        pos.y + particle.velocity.y * dt,
+        pos.z + particle.velocity.z * dt
+      );
+      const scale = particle.initialScale * (1 + progress * 2.8);
+      particle.entity.setLocalScale(scale, scale, scale);
+    }
+
+    for (const particle of this.fountainPool.items) {
+      if (!this.fountainPool.isActive(particle)) continue;
+      particle.life += dt;
+      if (particle.life >= particle.maxLife) {
+        this.releaseParticle(this.fountainPool, particle);
+        continue;
+      }
+      particle.velocity.y -= 5.5 * dt;
+      const pos = particle.entity.getPosition();
+      particle.entity.setPosition(
+        pos.x + particle.velocity.x * dt,
+        pos.y + particle.velocity.y * dt,
+        pos.z + particle.velocity.z * dt
+      );
     }
   }
 }
