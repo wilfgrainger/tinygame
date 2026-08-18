@@ -1,6 +1,7 @@
 import * as pc from 'playcanvas';
 import { heightAt, WATER_SURFACE_Y, WORLD_HALF_EXTENT } from './heightfield';
 import { MOUNTAIN_WAYPOINTS } from './WorldDefinition';
+import { sampleTerrainRoad } from './roadGeometry';
 
 export function material(color: pc.Color, gloss = 0.15, metalness = 0, opacity = 1, emissive?: pc.Color): pc.StandardMaterial {
   const m = new pc.StandardMaterial();
@@ -19,6 +20,45 @@ export function material(color: pc.Color, gloss = 0.15, metalness = 0, opacity =
   return m;
 }
 
+const TERRAIN_ALIGNED_BOX_NAMES = new Set(['RoadNS', 'RoadEW', 'Sidewalk', 'StripeNS', 'StripeEW']);
+
+function terrainAlignedBox(
+  app: pc.Application,
+  name: string,
+  mat: pc.Material,
+  position: pc.Vec3,
+  scale: pc.Vec3
+): pc.Entity {
+  const root = new pc.Entity(name);
+  app.root.addChild(root);
+
+  const alongZ = scale.z >= scale.x;
+  const halfLength = (alongZ ? scale.z : scale.x) * 0.5;
+  const width = alongZ ? scale.x : scale.z;
+  const from = alongZ
+    ? { x: position.x, z: position.z - halfLength }
+    : { x: position.x - halfLength, z: position.z };
+  const to = alongZ
+    ? { x: position.x, z: position.z + halfLength }
+    : { x: position.x + halfLength, z: position.z };
+
+  const spans = sampleTerrainRoad(from, to, width, heightAt, {
+    maxSpanLength: name.startsWith('Stripe') ? 3 : 3.5,
+    surfaceOffset: position.y
+  });
+
+  for (const [index, span] of spans.entries()) {
+    const segment = new pc.Entity(`${name}Segment${index}`);
+    segment.addComponent('render', { type: 'box', material: mat });
+    segment.setPosition(span.x, span.y, span.z);
+    segment.setEulerAngles((span.pitchRadians * 180) / Math.PI, (span.yawRadians * 180) / Math.PI, 0);
+    segment.setLocalScale(span.width, scale.y, span.length + 0.06);
+    root.addChild(segment);
+  }
+
+  return root;
+}
+
 export function primitive(
   app: pc.Application,
   name: string,
@@ -28,6 +68,10 @@ export function primitive(
   scale: pc.Vec3,
   parent?: pc.Entity
 ): pc.Entity {
+  if (!parent && type === 'box' && TERRAIN_ALIGNED_BOX_NAMES.has(name)) {
+    return terrainAlignedBox(app, name, mat, position, scale);
+  }
+
   const entity = new pc.Entity(name);
   entity.addComponent('render', { type, material: mat });
   entity.setPosition(position);
